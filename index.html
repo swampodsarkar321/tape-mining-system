@@ -62,6 +62,7 @@
         <span id="nickname">👤 Guest</span> | 🌟 Balance: <span id="balance">0.0000</span> TAPE
         <button class="connect-wallet" onclick="connectWallet()">Connect</button>
         <button class="withdraw" onclick="withdraw()">Withdraw</button>
+        <button class="withdraw" onclick="logout()">Logout</button>
     </div>
 
     <h1>🔥 TAPE Mining System 🔥</h1>
@@ -104,6 +105,16 @@
             } else {
                 alert("Enter valid credentials");
             }
+        }
+
+        function logout() {
+            localStorage.removeItem("username");
+            localStorage.removeItem(username + "_balance");
+            balance = 0.0000; // Reset balance when logging out
+            document.getElementById("balance").innerText = balance.toFixed(4); // Update balance on UI
+            document.getElementById("nickname").innerText = "👤 Guest"; // Reset nickname
+            document.getElementById("loginPopup").style.display = "block"; // Show login popup
+            location.reload();
         }
 
         function toggleMining() {
