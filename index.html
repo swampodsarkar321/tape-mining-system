@@ -177,7 +177,7 @@
         }
     </style>
 </head>
-<body>
+<body onload="checkLoginStatus()">
     <div class="login-popup" id="loginPopup">
         <div class="login-box">
             <h2>Login</h2>
@@ -186,18 +186,19 @@
             <button onclick="closeLoginPopup()">Login</button>
         </div>
     </div>
-    <div class="sidebar" id="sidebar">
+    <div class="sidebar">
         <h2>TAPE AI</h2>
         <ul>
             <li onclick="showSection('dashboard')">📊 Dashboard</li>
             <li onclick="showSection('earnings')">💰 Earnings</li>
             <li onclick="showSection('rewards')">🎁 Rewards</li>
             <li onclick="showSection('referral')">📢 Referral Program</li>
+            <li onclick="logout()">🚪 Logout</li>
         </ul>
     </div>
     <div class="main-content">
         <div class="top-bar">
-            <div>👤 <span id="userName">Swampod</span> | 🌟 Mining Balance: <span id="balance">0.0000</span> TAPE</div>
+            <div>👤 <span id="userName">Guest</span> | 🌟 Mining Balance: <span id="balance">0.0000</span> TAPE</div>
             <button onclick="copyReferral()">Copy Referral Link</button>
         </div>
         <div class="dashboard" id="dashboard">
@@ -209,7 +210,7 @@
         <div class="dashboard" id="earnings" style="display:none;">
             <h2>💰 Earnings Overview</h2>
             <p>Lifetime Earnings: 0.0000 TAPE</p>
-            <p>Today's Earnings: 0.0000 TAPE</p>
+            <p>Today's Earnings: <span id="dailyEarnings">0.0000</span> TAPE</p>
             <div id="earningsGraph">
                 <canvas id="earningsChart" width="400" height="200"></canvas>
             </div>
@@ -221,93 +222,168 @@
             <h2>🎁 Rewards</h2>
             <p>Claim your bonus! You can claim once per day for a bonus of 10 TAPE.</p>
             <button id="claimRewardBtn" onclick="claimReward()">Claim Reward</button>
+            <p id="claimStatus"></p>
         </div>
         <div class="dashboard" id="referral" style="display:none;">
             <h2>📢 Referral Program</h2>
-            <p>Your referral link has been shared <span id="referralCount">0</span> times.</p>
-            <p>Share your link and earn bonuses!</p>
+            <p>Share your referral link to earn more TAPE!</p>
+            <input type="text" id="referralLink" readonly value="https://tape.ai/referral/12345">
+            <button onclick="copyReferral()">Copy Referral Link</button>
         </div>
         <div class="footer">
-            Copyright All Reserved TAPE AI 2025
+            <p>&copy; 2025 TAPE AI. All rights reserved.</p>
         </div>
     </div>
 
     <script>
-        let miningBalance = 0; // Set initial balance to 0
+        let miningBalance = 0;
+        let dailyEarnings = 0;
+        let miningStarted = false;
+        let miningEndTime = 0;
         let miningInterval;
-        let earningsData = []; // Array to hold hourly earnings data
-        let rewardClaimed = false; // Track reward claim status
-        let miningEndTime;
-        let referralCount = 0; // Track how many people referred
+        let lastClaimDate = localStorage.getItem('lastClaimDate') || '';
+        let earningsHistory = []; // To store earnings over time
 
-        // Check if the user is logged in using localStorage
-        window.onload = function () {
-            const username = localStorage.getItem('username');
-            if (!username) {
-                document.getElementById('loginPopup').style.display = 'flex'; // Show login popup
-                document.body.style.display = 'none'; // Hide the body content until logged in
-            } else {
+        // Check if user is logged in
+        function checkLoginStatus() {
+            let username = localStorage.getItem('username');
+            if (username) {
                 document.getElementById('userName').textContent = username;
-                document.getElementById('loginPopup').style.display = 'none';
-                document.body.style.display = 'flex'; // Show the body content after login
-                showSection('dashboard');
+                miningBalance = parseFloat(localStorage.getItem('balance')) || 0;
+                dailyEarnings = parseFloat(localStorage.getItem('dailyEarnings')) || 0;
+                miningStarted = localStorage.getItem('miningStarted') === 'true';
+                miningEndTime = parseInt(localStorage.getItem('miningEndTime')) || 0;
+
+                document.getElementById('balance').textContent = miningBalance.toFixed(4);
+                document.getElementById('dailyEarnings').textContent = dailyEarnings.toFixed(4);
+
+                if (miningStarted && Date.now() < miningEndTime) {
+                    startMining(); // Resume mining if it was already started
+                } else {
+                    localStorage.removeItem('miningStarted'); // Remove expired mining data
+                }
+            } else {
+                showSection('login');
             }
         }
 
+        // Handle login logic
         function closeLoginPopup() {
             let username = document.getElementById('username').value;
-            localStorage.setItem('username', username); // Save username in localStorage
-            miningBalance = 0;
-            document.getElementById('balance').textContent = miningBalance.toFixed(4);
-            document.getElementById('userName').textContent = username; // Set profile name
-            document.getElementById('loginPopup').style.display = 'none';
-            document.body.style.display = 'flex'; // Show the body content
-            showSection('dashboard');
+            let password = document.getElementById('password').value;
+
+            if (username && password) {
+                localStorage.setItem('username', username);
+                localStorage.setItem('balance', miningBalance);
+                localStorage.setItem('dailyEarnings', dailyEarnings);
+                document.getElementById('loginPopup').style.display = 'none'; // Hide the login popup
+                document.getElementById('userName').textContent = username;
+                checkLoginStatus(); // Reload the dashboard with the user data
+            } else {
+                alert("Please enter a valid username and password.");
+            }
         }
 
+        // Show the appropriate section
         function showSection(section) {
             document.getElementById('dashboard').style.display = 'none';
             document.getElementById('earnings').style.display = 'none';
             document.getElementById('rewards').style.display = 'none';
             document.getElementById('referral').style.display = 'none';
-            
+
             document.getElementById(section).style.display = 'block';
         }
 
+        // Start mining functionality
         function startMining() {
-            if (!miningInterval) {
-                miningInterval = setInterval(() => {
-                    miningBalance += 0.0001; // Simulate mining
-                    document.getElementById('balance').textContent = miningBalance.toFixed(4);
-                }, 1000);
-                document.getElementById('startMiningBtn').textContent = 'Mining...';
-                miningEndTime = Date.now() + 24 * 60 * 60 * 1000; // Set 24 hours for mining
-                setTimeout(() => {
-                    clearInterval(miningInterval);
-                    document.getElementById('startMiningBtn').textContent = 'Start Mining';
-                }, 24 * 60 * 60 * 1000);
+            if (miningStarted) {
+                alert("Mining already in progress.");
+                return;
             }
-        }
 
-        function claimReward() {
-            if (rewardClaimed) {
-                alert('You have already claimed your reward today.');
-            } else {
-                rewardClaimed = true;
-                miningBalance += 10;
+            miningStarted = true;
+            miningEndTime = Date.now() + (24 * 60 * 60 * 1000); // 24 hours from now
+            localStorage.setItem('miningStarted', 'true');
+            localStorage.setItem('miningEndTime', miningEndTime);
+
+            // Start mining: Add 0.5 to balance every 5 seconds
+            miningInterval = setInterval(function() {
+                miningBalance += 0.5;
+                localStorage.setItem('balance', miningBalance);
                 document.getElementById('balance').textContent = miningBalance.toFixed(4);
-                alert('Reward claimed: 10 TAPE');
+                updateEarningsGraph(); // Update the earnings graph
+            }, 5000);
+
+            // Show mining end status
+            document.getElementById('startMiningBtn').textContent = "Mining... (Ends in 24 hours)";
+        }
+
+        // Update earnings graph (graph)
+        function updateEarningsGraph() {
+            // Add the current daily earnings to history
+            earningsHistory.push(dailyEarnings);
+            if (earningsHistory.length > 24) earningsHistory.shift(); // Keep last 24 entries
+
+            let ctx = document.getElementById('earningsChart').getContext('2d');
+            let earningsChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: Array.from({length: earningsHistory.length}, (_, i) => `Hour ${i + 1}`),
+                    datasets: [{
+                        label: 'Daily Earnings (TAPE)',
+                        data: earningsHistory,
+                        borderColor: '#00ffcc',
+                        borderWidth: 2,
+                        fill: false
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Time (Hours)'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Earnings (TAPE)'
+                            },
+                            min: 0
+                        }
+                    }
+                }
+            });
+        }
+
+        // Claim reward
+        function claimReward() {
+            let today = new Date().toLocaleDateString();
+            if (today !== lastClaimDate) {
+                localStorage.setItem('lastClaimDate', today);
+                dailyEarnings += 10; // Reward bonus
+                localStorage.setItem('dailyEarnings', dailyEarnings);
+                document.getElementById('claimStatus').textContent = "Claim successful! You've earned 10 TAPE.";
+                document.getElementById('dailyEarnings').textContent = dailyEarnings.toFixed(4);
+            } else {
+                document.getElementById('claimStatus').textContent = "You've already claimed today!";
             }
         }
 
-        function showDetailedEarnings() {
-            alert('Detailed earnings coming soon!');
+        // Copy referral link
+        function copyReferral() {
+            let referralLink = document.getElementById('referralLink');
+            referralLink.select();
+            referralLink.setSelectionRange(0, 99999); // For mobile devices
+            document.execCommand('copy');
+            alert("Referral link copied!");
         }
 
-        function copyReferral() {
-            referralCount++;
-            document.getElementById('referralCount').textContent = referralCount;
-            alert('Referral link copied!');
+        // Logout user
+        function logout() {
+            localStorage.clear();
+            location.reload(); // Reload the page to show login screen again
         }
     </script>
 </body>
