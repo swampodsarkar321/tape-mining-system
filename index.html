@@ -205,7 +205,7 @@
             <h2>📊 Dashboard Overview</h2>
             <p>Lifetime Earnings: 0.0000 TAPE</p>
             <p>Today's Earnings: 0.0000 TAPE</p>
-            <button class="mine-button" onclick="startMining()">Start Mining</button>
+            <button class="mine-button" id="startMiningBtn" onclick="startMining()">Start Mining</button>
         </div>
         <div class="dashboard" id="earnings" style="display:none;">
             <h2>💰 Earnings Overview</h2>
@@ -220,13 +220,8 @@
         </div>
         <div class="dashboard" id="rewards" style="display:none;">
             <h2>🎁 Rewards</h2>
-            <p>Day 1 Login Reward: <button onclick="claimReward(1)">Claim</button></p>
-            <p>Day 2 Login Reward: <button onclick="claimReward(2)">Claim</button></p>
-            <p>Day 3 Login Reward: <button onclick="claimReward(3)">Claim</button></p>
-            <p>Day 4 Login Reward: <button onclick="claimReward(4)">Claim</button></p>
-            <p>Day 5 Login Reward: <button onclick="claimReward(5)">Claim</button></p>
-            <p>Day 6 Login Reward: <button onclick="claimReward(6)">Claim</button></p>
-            <p>Day 7 Login Reward: <button onclick="claimReward(7)">Claim</button></p>
+            <p>Claim your bonus! You can claim once per day for a bonus of 10 TAPE.</p>
+            <button id="claimRewardBtn" onclick="claimReward()">Claim Reward</button>
         </div>
         <div class="footer">
             Copyright All Reserved TAPE AI 2025
@@ -237,15 +232,19 @@
         let miningBalance = 0; // Set initial balance to 0
         let miningInterval;
         let earningsData = []; // Array to hold hourly earnings data
+        let rewardClaimed = false; // Track reward claim status
+        let miningEndTime;
 
         function showLoginPopup() {
             document.getElementById('loginPopup').style.display = 'flex';
         }
 
         function closeLoginPopup() {
+            let username = document.getElementById('username').value;
             // Reset balance to 0 after login
             miningBalance = 0;
             document.getElementById('balance').textContent = miningBalance.toFixed(4);
+            document.getElementById('userName').textContent = username; // Set profile name
             document.getElementById('loginPopup').style.display = 'none';
             showSection('dashboard'); // Show dashboard after login
         }
@@ -267,75 +266,41 @@
 
         function startMining() {
             // Simulate mining process and update balance
+            document.getElementById('startMiningBtn').textContent = "Mining...";
+            miningEndTime = new Date().getTime() + 24 * 60 * 60 * 1000; // 24 hours from now
             miningInterval = setInterval(() => {
                 miningBalance += 0.0001; // Increase balance by 0.0001 every second
                 document.getElementById('balance').textContent = miningBalance.toFixed(4);
-                logEarnings();
+
+                if (new Date().getTime() >= miningEndTime) {
+                    clearInterval(miningInterval);
+                    document.getElementById('startMiningBtn').textContent = "Mining Ended";
+                }
             }, 1000); // Update every second
         }
 
-        function logEarnings() {
-            let currentHour = new Date().getHours();
-            if (earningsData.length >= 24) {
-                earningsData.shift(); // Remove the oldest data if there are more than 24 hours of data
+        function claimReward() {
+            if (rewardClaimed) {
+                alert('You can only claim once per day.');
+                return;
             }
-            earningsData.push({ hour: currentHour, earnings: miningBalance }); // Log current earnings data
-            updateEarningsChart();
-        }
-
-        function updateEarningsChart() {
-            let ctx = document.getElementById('earningsChart').getContext('2d');
-            let hours = [];
-            let earnings = [];
-            earningsData.forEach((data) => {
-                hours.push(data.hour);
-                earnings.push(data.earnings.toFixed(4));
-            });
-
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: hours,
-                    datasets: [{
-                        label: 'Earnings (TAPE)',
-                        data: earnings,
-                        borderColor: '#ff00ff',
-                        fill: false,
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        x: {
-                            title: {
-                                display: true,
-                                text: 'Hour'
-                            }
-                        },
-                        y: {
-                            title: {
-                                display: true,
-                                text: 'Earnings (TAPE)'
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        function showDetailedEarnings() {
-            alert('Detailed earnings coming soon!');
-        }
-
-        function claimReward(day) {
-            alert(`Claimed reward for Day ${day}!`);
+            miningBalance += 10; // Bonus reward of 10 TAPE
+            rewardClaimed = true;
+            document.getElementById('balance').textContent = miningBalance.toFixed(4);
+            alert('You have claimed your 10 TAPE reward!');
+            document.getElementById('claimRewardBtn').disabled = true;
         }
 
         function logout() {
             alert('Logging out...');
             miningBalance = 0;
+            rewardClaimed = false;
             document.getElementById('balance').textContent = miningBalance.toFixed(4);
+            document.getElementById('userName').textContent = 'Swampod';
+        }
+
+        function showDetailedEarnings() {
+            alert('Detailed earnings coming soon!');
         }
     </script>
 </body>
