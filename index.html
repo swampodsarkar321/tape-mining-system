@@ -3,171 +3,339 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TAPE Mining System</title>
+    <title>TAPE Mining Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Include Chart.js -->
     <style>
+        /* Base Styling */
         body {
-            background: linear-gradient(135deg, #0f0f0f, #1a1a1a);
-            color: white;
-            text-align: center;
-            font-family: Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
+            background: #121212;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            position: relative;
+            color: #e0e0e0;
         }
 
-        h1 {
-            font-size: 1.6rem;
-            text-shadow: 0 0 10px #00ffcc;
-        }
-
-        .wallet-container {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background: rgba(51, 51, 51, 0.8);
-            padding: 8px 12px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
-            font-size: 14px;
-        }
-
-        .connect-wallet, .withdraw, .task-button, .invite-button {
-            font-size: 12px;
-            padding: 6px 10px;
-            background: linear-gradient(45deg, #00ffcc, #007bff);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-
-        .connect-wallet:hover, .withdraw:hover, .task-button:hover, .invite-button:hover {
-            transform: scale(1.1);
-            box-shadow: 0 0 15px rgba(0, 255, 204, 0.7);
+        /* 3D Cyberpunk Neon Effect */
+        .login-popup, .sidebar, .main-content {
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.5), 0 0 30px rgba(0, 0, 255, 0.3), 0 0 60px rgba(255, 0, 255, 0.4);
+            border-radius: 10px;
         }
 
         .login-popup {
-            display: block;
             position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(51, 51, 51, 0.9);
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-box {
+            background: rgba(10, 10, 10, 0.8);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+        }
+
+        .login-box input {
+            display: block;
+            margin: 15px auto;
+            padding: 10px;
+            width: 80%;
+            background: rgba(30, 30, 30, 0.8);
+            color: #fff;
+            border: 2px solid #00ffcc;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+
+        .login-box input:focus {
+            outline: none;
+            border: 2px solid #ff00ff;
+        }
+
+        .login-box button {
+            background: #00ffcc;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .login-box button:hover {
+            background: #ff00ff;
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            width: 250px;
+            background: #1a1a1a;
+            height: 100vh;
+            padding: 20px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.7);
+        }
+
+        .sidebar h2 {
+            text-align: center;
+            color: #00ffcc;
+            margin-bottom: 30px;
+            font-size: 24px;
+            text-shadow: 0 0 10px #00ffcc, 0 0 20px #ff00ff;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .sidebar ul li {
+            padding: 10px;
+            color: #e0e0e0;
+            cursor: pointer;
+            transition: 0.3s;
+            border-radius: 5px;
+            text-transform: uppercase;
+        }
+
+        .sidebar ul li:hover {
+            background: rgba(0, 255, 255, 0.3);
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+        }
+
+        /* Main Content Styling */
+        .main-content {
+            margin-left: 270px;
+            padding: 30px;
+            background: #121212;
+            min-height: 100vh;
+            box-shadow: inset 0 0 10px rgba(0, 255, 255, 0.4);
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            background: rgba(30, 30, 30, 0.9);
             padding: 15px;
             border-radius: 10px;
-            box-shadow: 0 0 15px rgba(0, 255, 204, 0.5);
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.6);
+            color: #00ffcc;
+        }
+
+        .dashboard {
+            margin-top: 20px;
+            background: rgba(30, 30, 30, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.4);
         }
 
         .footer {
-            position: fixed;
-            bottom: 10px;
-            width: 100%;
             text-align: center;
-            font-size: 12px;
-            color: #ccc;
+            margin-top: 20px;
+            padding: 15px;
+            background: #1a1a1a;
+            color: #00ffcc;
+        }
+
+        .mine-button {
+            margin-top: 20px;
+            padding: 15px;
+            background: #00ffcc;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 18px;
+            text-shadow: 0 0 5px #ff00ff, 0 0 10px #00ffcc;
+            transition: 0.3s;
+        }
+
+        .mine-button:hover {
+            background: #ff00ff;
+            text-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff;
+        }
+
+        /* Styling for Earnings Graph */
+        #earningsGraph {
+            margin-top: 30px;
+            padding: 10px;
+            background: rgba(30, 30, 30, 0.8);
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.4);
         }
     </style>
 </head>
-<body>
-    <div class="wallet-container">
-        <span id="nickname">👤 Guest</span> | 🌟 Balance: <span id="balance">0.0000</span> TAPE
-        <button class="connect-wallet" onclick="connectWallet()">Connect</button>
-        <button class="withdraw" onclick="withdraw()">Withdraw</button>
-        <button class="withdraw" onclick="logout()">Logout</button>
-    </div>
-
-    <h1>🔥 TAPE Mining System 🔥</h1>
-    <p>Mine 0.0001 TAPE every 5 seconds! ⛏</p>
-    <h2>⛏ Mining Dashboard</h2>
-    <p id="mining-status">Mining is Inactive</p>
-    <button class="task-button" id="mining-button" onclick="toggleMining()">🚀 Start Mining</button>
-    
-    <h3>📌 Complete Task:</h3>
-    <button class="task-button" onclick="window.open('https://www.facebook.com/swampodsarkar', '_blank')">Follow on Facebook</button>
-    
-    <button class="task-button" onclick="window.open('https://www.youtube.com/channel/UCxw8Xh8eG-EqZRmjlHbGeTQ', '_blank')">Subscribe to YouTube</button>
-    
+<body onload="showLoginPopup()">
     <div class="login-popup" id="loginPopup">
-        <h3>Login</h3>
-        <input type="text" id="username" placeholder="Username">
-        <input type="password" id="password" placeholder="Password">
-        <button onclick="login()">Login</button>
+        <div class="login-box">
+            <h2>Login</h2>
+            <input type="text" placeholder="Username" id="username">
+            <input type="password" placeholder="Password" id="password">
+            <button onclick="closeLoginPopup()">Login</button>
+        </div>
     </div>
-
-    <div class="footer">
-        <p>© 2025 TAPE AI. All Rights Reserved.</p>
+    <div class="sidebar">
+        <h2>TAPE AI</h2>
+        <ul>
+            <li onclick="showSection('dashboard')">📊 Dashboard</li>
+            <li onclick="showSection('earnings')">💰 Earnings</li>
+            <li onclick="showSection('rewards')">🎁 Rewards</li>
+            <li onclick="showSection('referral')">📢 Referral Program</li>
+            <li onclick="logout()">🚪 Logout</li>
+        </ul>
+    </div>
+    <div class="main-content">
+        <div class="top-bar">
+            <div>👤 <span id="userName">Swampod</span> | 🌟 Mining Balance: <span id="balance">0.0000</span> TAPE</div>
+            <button onclick="copyReferral()">Copy Referral Link</button>
+        </div>
+        <div class="dashboard" id="dashboard">
+            <h2>📊 Dashboard Overview</h2>
+            <p>Lifetime Earnings: 0.0000 TAPE</p>
+            <p>Today's Earnings: 0.0000 TAPE</p>
+            <button class="mine-button" onclick="startMining()">Start Mining</button>
+        </div>
+        <div class="dashboard" id="earnings" style="display:none;">
+            <h2>💰 Earnings Overview</h2>
+            <p>Lifetime Earnings: 0.0000 TAPE</p>
+            <p>Today's Earnings: 0.0000 TAPE</p>
+            <div id="earningsGraph">
+                <canvas id="earningsChart" width="400" height="200"></canvas>
+            </div>
+            <p>
+                <a href="#" onclick="showDetailedEarnings()">View Detailed Earnings</a>
+            </p>
+        </div>
+        <div class="dashboard" id="rewards" style="display:none;">
+            <h2>🎁 Rewards</h2>
+            <p>Day 1 Login Reward: <button onclick="claimReward(1)">Claim</button></p>
+            <p>Day 2 Login Reward: <button onclick="claimReward(2)">Claim</button></p>
+            <p>Day 3 Login Reward: <button onclick="claimReward(3)">Claim</button></p>
+            <p>Day 4 Login Reward: <button onclick="claimReward(4)">Claim</button></p>
+            <p>Day 5 Login Reward: <button onclick="claimReward(5)">Claim</button></p>
+            <p>Day 6 Login Reward: <button onclick="claimReward(6)">Claim</button></p>
+            <p>Day 7 Login Reward: <button onclick="claimReward(7)">Claim</button></p>
+        </div>
+        <div class="footer">
+            Copyright All Reserved TAPE AI 2025
+        </div>
     </div>
 
     <script>
-        let miningActive = false;
-        let username = localStorage.getItem("username");
-        let balance = username ? parseFloat(localStorage.getItem(username + "_balance")) || 0.0000 : 0.0000;
-        
-        if (!username) {
-            document.getElementById("loginPopup").style.display = "block";
-        } else {
-            document.getElementById("balance").innerText = balance.toFixed(4);
-            document.getElementById("nickname").innerText = "👤 " + username;
-            document.getElementById("loginPopup").style.display = "none";
+        let miningBalance = 0; // Set initial balance to 0
+        let miningInterval;
+        let earningsData = []; // Array to hold hourly earnings data
+
+        function showLoginPopup() {
+            document.getElementById('loginPopup').style.display = 'flex';
         }
 
-        function login() {
-            let user = document.getElementById("username").value;
-            let pass = document.getElementById("password").value;
-            if (user && pass) {
-                localStorage.setItem("username", user);
-                localStorage.setItem(user + "_password", pass);
-                localStorage.setItem(user + "_balance", balance);
-                document.getElementById("balance").innerText = balance.toFixed(4);
-                document.getElementById("nickname").innerText = "👤 " + user;
-                document.getElementById("loginPopup").style.display = "none";
-            } else {
-                alert("Enter valid credentials");
-            }
+        function closeLoginPopup() {
+            // Reset balance to 0 after login
+            miningBalance = 0;
+            document.getElementById('balance').textContent = miningBalance.toFixed(4);
+            document.getElementById('loginPopup').style.display = 'none';
+            showSection('dashboard'); // Show dashboard after login
         }
 
-        function logout() {
-            localStorage.removeItem("username");
-            localStorage.removeItem(username + "_balance");
-            balance = 0.0000; // Reset balance when logging out
-            document.getElementById("balance").innerText = balance.toFixed(4); // Update balance on UI
-            document.getElementById("nickname").innerText = "👤 Guest"; // Reset nickname
-            document.getElementById("loginPopup").style.display = "block"; // Show login popup
+        function showSection(section) {
+            let sections = document.querySelectorAll('.dashboard');
+            sections.forEach((sec) => {
+                sec.style.display = 'none';
+            });
+            document.getElementById(section).style.display = 'block';
         }
 
-        function toggleMining() {
-            if (!username) {
-                alert("Please login first!");
-                return;
-            }
-            
-            let status = document.getElementById("mining-status");
-            let button = document.getElementById("mining-button");
-            miningActive = !miningActive;
-
-            if (miningActive) {
-                status.innerText = "Mining is Active!";
-                button.innerText = "⏸ Stop Mining";
-                startMining();
-            } else {
-                status.innerText = "Mining is Inactive";
-                button.innerText = "🚀 Start Mining";
-            }
+        function copyReferral() {
+            let referralLink = "https://example.com/referral";
+            navigator.clipboard.writeText(referralLink).then(() => {
+                alert('Referral link copied to clipboard!');
+            });
         }
 
         function startMining() {
-            if (miningActive) {
-                balance += 0.0001;
-                document.getElementById("balance").innerText = balance.toFixed(4);
-                localStorage.setItem(username + "_balance", balance.toFixed(4));
-                setTimeout(startMining, 5000);
+            // Simulate mining process and update balance
+            miningInterval = setInterval(() => {
+                miningBalance += 0.0001; // Increase balance by 0.0001 every second
+                document.getElementById('balance').textContent = miningBalance.toFixed(4);
+                logEarnings();
+            }, 1000); // Update every second
+        }
+
+        function logEarnings() {
+            let currentHour = new Date().getHours();
+            if (earningsData.length >= 24) {
+                earningsData.shift(); // Remove the oldest data if there are more than 24 hours of data
             }
+            earningsData.push({ hour: currentHour, earnings: miningBalance }); // Log current earnings data
+            updateEarningsChart();
         }
 
-        function connectWallet() {
-            alert("Connecting to MetaMask / Trust Wallet...");
+        function updateEarningsChart() {
+            let ctx = document.getElementById('earningsChart').getContext('2d');
+            let hours = [];
+            let earnings = [];
+            earningsData.forEach((data) => {
+                hours.push(data.hour);
+                earnings.push(data.earnings.toFixed(4));
+            });
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: hours,
+                    datasets: [{
+                        label: 'Earnings (TAPE)',
+                        data: earnings,
+                        borderColor: '#ff00ff',
+                        fill: false,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Hour'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Earnings (TAPE)'
+                            }
+                        }
+                    }
+                }
+            });
         }
 
-        function withdraw() {
-            alert("Coming Soon!");
+        function showDetailedEarnings() {
+            alert('Detailed earnings coming soon!');
+        }
+
+        function claimReward(day) {
+            alert(`Claimed reward for Day ${day}!`);
+        }
+
+        function logout() {
+            alert('Logging out...');
+            miningBalance = 0;
+            document.getElementById('balance').textContent = miningBalance.toFixed(4);
         }
     </script>
 </body>
