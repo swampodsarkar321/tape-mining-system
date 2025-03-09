@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TAPE Mining System</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f0f0f, #1a1a1a);
+            color: white;
+            text-align: center;
+            font-family: Arial, sans-serif;
+        }
+
+        h1 {
+            font-size: 1.6rem;
+            text-shadow: 0 0 10px #00ffcc;
+        }
+
+        .wallet-container {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(51, 51, 51, 0.8);
+            padding: 8px 12px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
+            font-size: 14px;
+        }
+
+        .connect-wallet, .withdraw, .task-button, .invite-button {
+            font-size: 12px;
+            padding: 6px 10px;
+            background: linear-gradient(45deg, #00ffcc, #007bff);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .connect-wallet:hover, .withdraw:hover, .task-button:hover, .invite-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(0, 255, 204, 0.7);
+        }
+
+        .login-popup {
+            display: block;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(51, 51, 51, 0.9);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 255, 204, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="wallet-container">
+        <span id="nickname">👤 Guest</span> | 🌟 Balance: <span id="balance">0.0000</span> TAPE
+        <button class="connect-wallet" onclick="connectWallet()">Connect</button>
+        <button class="withdraw" onclick="withdraw()">Withdraw</button>
+    </div>
+
+    <h1>🔥 TAPE Mining System 🔥</h1>
+    <p>Mine 0.0001 TAPE every 5 seconds! ⛏</p>
+    <h2>⛏ Mining Dashboard</h2>
+    <p id="mining-status">Mining is Inactive</p>
+    <button class="task-button" id="mining-button" onclick="toggleMining()">🚀 Start Mining</button>
+    
+    <h3>📌 Complete Task:</h3>
+    <button class="task-button" onclick="window.open('https://www.facebook.com/swampodsarkar', '_blank')">Follow on Facebook</button>
+    
+    <div class="login-popup" id="loginPopup">
+        <h3>Login</h3>
+        <input type="text" id="username" placeholder="Username">
+        <input type="password" id="password" placeholder="Password">
+        <button onclick="login()">Login</button>
+    </div>
+
+    <script>
+        let miningActive = false;
+        let username = localStorage.getItem("username");
+        let balance = username ? parseFloat(localStorage.getItem(username + "_balance")) || 0.0000 : 0.0000;
+        
+        if (!username) {
+            document.getElementById("loginPopup").style.display = "block";
+        } else {
+            document.getElementById("balance").innerText = balance.toFixed(4);
+            document.getElementById("nickname").innerText = "👤 " + username;
+            document.getElementById("loginPopup").style.display = "none";
+        }
+
+        function login() {
+            let user = document.getElementById("username").value;
+            let pass = document.getElementById("password").value;
+            if (user && pass) {
+                localStorage.setItem("username", user);
+                localStorage.setItem(user + "_password", pass);
+                localStorage.setItem(user + "_balance", balance);
+                location.reload();
+            } else {
+                alert("Enter valid credentials");
+            }
+        }
+
+        function toggleMining() {
+            if (!username) {
+                alert("Please login first!");
+                return;
+            }
+            
+            let status = document.getElementById("mining-status");
+            let button = document.getElementById("mining-button");
+            miningActive = !miningActive;
+
+            if (miningActive) {
+                status.innerText = "Mining is Active!";
+                button.innerText = "⏸ Stop Mining";
+                startMining();
+            } else {
+                status.innerText = "Mining is Inactive";
+                button.innerText = "🚀 Start Mining";
+            }
+        }
+
+        function startMining() {
+            if (miningActive) {
+                balance += 0.0001;
+                document.getElementById("balance").innerText = balance.toFixed(4);
+                localStorage.setItem(username + "_balance", balance.toFixed(4));
+                setTimeout(startMining, 5000);
+            }
+        }
+
+        function connectWallet() {
+            alert("Connecting to MetaMask / Trust Wallet...");
+        }
+
+        function withdraw() {
+            alert("Coming Soon!");
+        }
+    </script>
+</body>
+</html>
