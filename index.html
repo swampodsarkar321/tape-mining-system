@@ -14,7 +14,7 @@
             margin: 0;
             padding: 0;
         }
-        .container, .auth-container {
+        .container, .auth-container, .signup-container {
             position: absolute;
             top: 50%;
             left: 50%;
@@ -165,12 +165,22 @@
         <button onclick="completeTask()">Complete Task</button>
     </div>
 
-    <!-- Authentication Page -->
-    <div class="auth-container" id="authContainer">
+    <!-- SignUp Page -->
+    <div class="signup-container" id="signupContainer">
+        <h1>TAPE AI SIGNUP</h1>
+        <input type="text" id="signupUsername" placeholder="Username" required>
+        <input type="password" id="signupPassword" placeholder="Password" required>
+        <button onclick="signUp()">Sign Up</button>
+        <p>Already have an account? <span onclick="showLogin()">Login</span></p>
+    </div>
+
+    <!-- Login Page -->
+    <div class="auth-container" id="authContainer" style="display: none;">
         <h1>TAPE AI LOGIN</h1>
-        <input type="text" id="username" placeholder="Username" required>
-        <input type="password" id="password" placeholder="Password" required>
+        <input type="text" id="loginUsername" placeholder="Username" required>
+        <input type="password" id="loginPassword" placeholder="Password" required>
         <button onclick="login()">Login</button>
+        <p>Don't have an account? <span onclick="showSignUp()">Sign Up</span></p>
     </div>
     
     <!-- Mining Page (Initially Hidden) -->
@@ -194,21 +204,54 @@
         let points = 0;
         let interval;
         let miningEndTime;
+        let userData = {};
 
-        function login() {
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
+        // Sign Up Function
+        function signUp() {
+            const username = document.getElementById('signupUsername').value;
+            const password = document.getElementById('signupPassword').value;
             if (username && password) {
-                // Hide login page and show mining page
-                document.getElementById('authContainer').style.display = 'none';
-                document.getElementById('miningContainer').style.display = 'block';
-                
-                // Display Profile Info
-                document.getElementById('profileInfo').style.display = 'block';
-                document.getElementById('userNameDisplay').innerText = username;
+                // Save User Data
+                userData[username] = password;
 
-                // Show Sidebar
-                document.getElementById('sidebar').style.display = 'block';
+                alert('Sign up successful! Please login now.');
+                showLogin();
+            } else {
+                alert('Please fill all fields!');
+            }
+        }
+
+        // Show Login Page
+        function showLogin() {
+            document.getElementById('signupContainer').style.display = 'none';
+            document.getElementById('authContainer').style.display = 'block';
+        }
+
+        // Show Sign Up Page
+        function showSignUp() {
+            document.getElementById('authContainer').style.display = 'none';
+            document.getElementById('signupContainer').style.display = 'block';
+        }
+
+        // Login Function
+        function login() {
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+            if (username && password) {
+                if (userData[username] === password) {
+                    // Hide login page and show mining page
+                    document.getElementById('authContainer').style.display = 'none';
+                    document.getElementById('miningContainer').style.display = 'block';
+                    
+                    // Display Profile Info
+                    document.getElementById('profileInfo').style.display = 'block';
+                    document.getElementById('userNameDisplay').innerText = username;
+
+                    // Show Sidebar
+                    document.getElementById('sidebar').style.display = 'block';
+                } else {
+                    alert('Invalid username or password!');
+                }
             } else {
                 alert('Please enter valid credentials!');
             }
@@ -217,15 +260,13 @@
         document.getElementById('startMining').addEventListener('click', function() {
             if (!mining) {
                 mining = true;
-                // Set mining to end after 24 hours (24 * 60 * 60 * 1000 ms)
                 miningEndTime = Date.now() + (24 * 60 * 60 * 1000); 
                 interval = setInterval(() => {
                     balance += (Math.random() * 0.0001).toFixed(8) * 1;
-                    totalBalance += (Math.random() * 0.0001).toFixed(8) * 1; // Increment total balance
+                    totalBalance += (Math.random() * 0.0001).toFixed(8) * 1; 
                     document.getElementById('balance').innerText = balance.toFixed(8);
-                    document.getElementById('totalBalance').innerText = totalBalance.toFixed(8); // Update total balance
+                    document.getElementById('totalBalance').innerText = totalBalance.toFixed(8); 
 
-                    // Check if 24 hours have passed
                     if (Date.now() > miningEndTime) {
                         clearInterval(interval);
                         mining = false;
@@ -248,7 +289,6 @@
 
         // Sidebar navigation functions
         function showTask() {
-            // Show Task Modal
             document.getElementById('overlay').style.display = 'block';
             document.getElementById('taskModal').style.display = 'block';
         }
@@ -261,22 +301,17 @@
             alert("Wallet feature coming soon!");
         }
 
-        // Withdraw Popup
         function showWithdraw() {
-            // Show the Withdraw Popup
             document.getElementById('withdrawPopup').style.display = 'block';
-
-            // Hide the Withdraw Popup after 2 seconds
             setTimeout(function() {
                 document.getElementById('withdrawPopup').style.display = 'none';
             }, 2000);
         }
 
-        // Complete Task function
         function completeTask() {
             points += 20;
-            totalBalance += 20; // Add 20 points to the main balance
-            document.getElementById('totalBalance').innerText = totalBalance.toFixed(8); // Update the total balance
+            totalBalance += 20;
+            document.getElementById('totalBalance').innerText = totalBalance.toFixed(8); 
             alert('Task completed! You earned 20 points.');
             document.getElementById('overlay').style.display = 'none';
             document.getElementById('taskModal').style.display = 'none';
@@ -288,7 +323,7 @@
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
-        const colors = ['#00FF00', '#32CD32', '#7FFF00', '#ADFF2F', '#9ACD32', '#228B22', '#006400']; // 7 Greenish Colors
+        const colors = ['#00FF00', '#32CD32', '#7FFF00', '#ADFF2F', '#9ACD32', '#228B22', '#006400']; 
         let colorIndex = 0;
 
         function drawMatrix() {
@@ -317,7 +352,6 @@
             setInterval(draw, 50);
         }
 
-        // Change color every 3 seconds
         setInterval(() => {
             colorIndex = (colorIndex + 1) % colors.length;
         }, 3000);
