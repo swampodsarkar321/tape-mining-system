@@ -3,360 +3,252 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TAPE AI MINING</title>
+    <title>GEN Z Airdrop</title>
     <style>
         body {
-            background: black;
-            color: lime;
-            font-family: Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(45deg, #1a1a1a, #121212);
+            color: #00ff00;
             text-align: center;
-            overflow: hidden;
             margin: 0;
             padding: 0;
         }
-        .container, .auth-container, .signup-container {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            padding: 20px;
-            border: 2px solid lime;
-            border-radius: 10px;
-            background: rgba(0, 0, 0, 0.8);
-            box-shadow: 0px 0px 20px lime;
+
+        .container {
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 30px;
+            background-color: rgba(0, 0, 0, 0.85);
+            border-radius: 12px;
+            box-shadow: 0px 10px 30px rgba(0, 255, 0, 0.2);
+            color: #fff;
         }
-        button {
-            background: lime;
-            color: black;
-            padding: 10px 20px;
+
+        h1 {
+            font-size: 36px;
+            color: #00ff00;
+            text-transform: uppercase;
+            margin-bottom: 30px;
+            font-weight: bold;
+        }
+
+        h2 {
+            font-size: 24px;
+            color: #fff;
+            margin: 10px 0;
+        }
+
+        input, button {
+            padding: 12px 20px;
+            margin: 15px 0;
+            border-radius: 8px;
             border: none;
-            cursor: pointer;
+            background: linear-gradient(145deg, #00ff00, #33cc33);
+            color: #000;
             font-size: 16px;
+            transition: all 0.3s ease;
         }
-        button:hover {
-            background: yellow;
+
+        input:focus, button:hover {
+            transform: scale(1.05);
+            box-shadow: 0px 4px 20px rgba(0, 255, 0, 0.6);
         }
-        canvas {
+
+        .mining-status {
+            font-size: 24px;
+            color: #00ff00;
+            font-weight: bold;
+            animation: heartbeat 1s infinite;
+        }
+
+        @keyframes heartbeat {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .profile-header {
             position: fixed;
-            top: 0;
-            left: 0;
-        }
-        .profile-info {
-            position: absolute;
             top: 10px;
             right: 20px;
-            color: lime;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 12px;
+            box-shadow: 0px 4px 15px rgba(0, 255, 0, 0.4);
+            color: #00ff00;
             font-size: 18px;
+            z-index: 9999;
         }
 
-        /* Sidebar Styles */
-        .sidebar {
+        .hidden {
+            display: none;
+        }
+
+        .popup {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 200px;
-            height: 100%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             background-color: rgba(0, 0, 0, 0.8);
-            box-shadow: 2px 0 10px lime;
-            color: lime;
+            color: #00ff00;
             padding: 20px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-        .sidebar button {
-            margin: 10px 0;
-            width: 100%;
-            font-size: 16px;
-            padding: 15px;
-        }
-        .sidebar button:hover {
-            background: yellow;
-            color: black;
+            border-radius: 12px;
+            z-index: 9999;
+            display: none;
+            font-size: 18px;
+            box-shadow: 0px 5px 20px rgba(0, 255, 0, 0.6);
         }
 
-        /* Task Modal */
-        #taskModal {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.9);
-            color: lime;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0px 0px 20px lime;
-            z-index: 1000;
-            text-align: left;
-        }
-        #taskModal button {
-            margin-top: 20px;
-        }
-        #overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 999;
+        .profile-info {
+            margin: 20px 0;
         }
 
-        /* Links Styling (For Highlight) */
-        #taskModal a {
-            color: lime;
-            text-decoration: none;
-            padding: 5px;
-            border-radius: 5px;
-        }
-        #taskModal a:hover {
-            background-color: yellow;
-            color: black;
-        }
-        #taskModal a:active {
-            background-color: orange;
-            color: black;
+        #startMiningBtn {
+            width: 200px;
+            background: linear-gradient(145deg, #00cc00, #33cc33);
         }
 
-        /* Withdraw Popup */
-        #withdrawPopup {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.9);
-            color: lime;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0px 0px 20px lime;
-            z-index: 1000;
+        #startMiningBtn:disabled {
+            background-color: #777;
         }
+
+        #startMiningBtn:hover {
+            background: linear-gradient(145deg, #33cc33, #00ff00);
+        }
+
     </style>
 </head>
 <body>
-    <canvas id="bg"></canvas>
-    
-    <!-- Sidebar -->
-    <div class="sidebar" id="sidebar" style="display: none;">
-        <button onclick="showTask()">Task</button>
-        <button onclick="showInvite()">Invite</button>
-        <button onclick="showWallet()">Wallet</button>
-        <button onclick="showWithdraw()">Withdraw</button> <!-- Withdraw Button Added -->
-    </div>
 
-    <!-- Withdraw Popup (Hidden Initially) -->
-    <div id="withdrawPopup">
-        <h2>Airdrop Coming Soon</h2>
-    </div>
+    <div class="container">
+        <h1>GEN Z Airdrop</h1>
 
-    <!-- Task Modal (Hidden Initially) -->
-    <div id="overlay"></div>
-    <div id="taskModal">
-        <h2>Complete the Tasks</h2>
-        <p>Follow me on:</p>
-        <ul>
-            <li><a href="https://facebook.com" target="_blank">Facebook</a></li>
-            <li><a href="https://instagram.com" target="_blank">Instagram</a></li>
-            <li><a href="https://twitter.com" target="_blank">X (Twitter)</a></li>
-        </ul>
-        <button onclick="completeTask()">Complete Task</button>
-    </div>
+        <!-- Login Form -->
+        <div id="loginForm">
+            <h2>Login</h2>
+            <input type="text" id="username" placeholder="Enter Username" required>
+            <button onclick="login()">Login</button>
+        </div>
 
-    <!-- SignUp Page -->
-    <div class="signup-container" id="signupContainer">
-        <h1>TAPE AI SIGNUP</h1>
-        <input type="text" id="signupUsername" placeholder="Username" required>
-        <input type="password" id="signupPassword" placeholder="Password" required>
-        <button onclick="signUp()">Sign Up</button>
-        <p>Already have an account? <span onclick="showLogin()">Login</span></p>
-    </div>
+        <!-- Main Content -->
+        <div id="mainContent" class="hidden">
+            <div id="profileHeader" class="profile-header">
+                <span id="profileName"></span> | Balance: <span id="balance">0.00</span> GEN
+            </div>
 
-    <!-- Login Page -->
-    <div class="auth-container" id="authContainer" style="display: none;">
-        <h1>TAPE AI LOGIN</h1>
-        <input type="text" id="loginUsername" placeholder="Username" required>
-        <input type="password" id="loginPassword" placeholder="Password" required>
-        <button onclick="login()">Login</button>
-        <p>Don't have an account? <span onclick="showSignUp()">Sign Up</span></p>
-    </div>
-    
-    <!-- Mining Page (Initially Hidden) -->
-    <div class="container" id="miningContainer" style="display: none;">
-        <h1>TAPE AI MINING</h1>
-        <p>Balance: <span id="balance">0.00</span> TAPE</p>
-        <button id="startMining">Start Mining</button>
-        <button id="stopMining" style="display: none;">Stop Mining</button>
-    </div>
+            <h2>Start Mining</h2>
+            <button id="startMiningBtn" onclick="startMining()">Start Mining</button>
+            <div id="miningStatus" class="mining-status hidden"></div>
 
-    <!-- Profile Info (Top Right Corner) -->
-    <div class="profile-info" id="profileInfo" style="display: none;">
-        <p id="profileName">Profile: <span id="userNameDisplay"></span></p>
-        <p>Total Balance: <span id="totalBalance">0.00</span> TAPE</p>
+            <button onclick="logout()">Logout</button>
+
+            <!-- Profile options -->
+            <div id="profileOptions" class="hidden">
+                <button onclick="walletConnect()">Wallet Connect</button>
+                <button onclick="withdraw()">Withdraw</button>
+            </div>
+        </div>
+
+        <!-- Popups -->
+        <div id="popup" class="popup">
+            <p id="popupMessage"></p>
+        </div>
     </div>
 
     <script>
-        let mining = false;
+        let loggedIn = false;
         let balance = 0;
-        let totalBalance = 0;
-        let points = 0;
-        let interval;
-        let miningEndTime;
-        let userData = {};
+        let miningInterval;
+        let miningStartTime = null;
+        let miningDuration = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 
-        // Sign Up Function
-        function signUp() {
-            const username = document.getElementById('signupUsername').value;
-            const password = document.getElementById('signupPassword').value;
-            if (username && password) {
-                // Save User Data
-                userData[username] = password;
-
-                alert('Sign up successful! Please login now.');
-                showLogin();
-            } else {
-                alert('Please fill all fields!');
+        // Check if user is logged in and mining is ongoing
+        window.onload = function() {
+            if (localStorage.getItem('username') && localStorage.getItem('balance')) {
+                loggedIn = true;
+                balance = parseFloat(localStorage.getItem('balance'));
+                document.getElementById("profileName").innerText = localStorage.getItem('username');
+                document.getElementById("balance").innerText = balance.toFixed(2);
+                document.getElementById("loginForm").classList.add("hidden");
+                document.getElementById("mainContent").classList.remove("hidden");
+                document.getElementById("profileOptions").classList.remove("hidden");
             }
-        }
+        };
 
-        // Show Login Page
-        function showLogin() {
-            document.getElementById('signupContainer').style.display = 'none';
-            document.getElementById('authContainer').style.display = 'block';
-        }
-
-        // Show Sign Up Page
-        function showSignUp() {
-            document.getElementById('authContainer').style.display = 'none';
-            document.getElementById('signupContainer').style.display = 'block';
-        }
-
-        // Login Function
+        // Login function
         function login() {
-            const username = document.getElementById('loginUsername').value;
-            const password = document.getElementById('loginPassword').value;
-            if (username && password) {
-                if (userData[username] === password) {
-                    // Hide login page and show mining page
-                    document.getElementById('authContainer').style.display = 'none';
-                    document.getElementById('miningContainer').style.display = 'block';
-                    
-                    // Display Profile Info
-                    document.getElementById('profileInfo').style.display = 'block';
-                    document.getElementById('userNameDisplay').innerText = username;
-
-                    // Show Sidebar
-                    document.getElementById('sidebar').style.display = 'block';
-                } else {
-                    alert('Invalid username or password!');
-                }
+            const username = document.getElementById("username").value;
+            if (username) {
+                loggedIn = true;
+                balance = 0;
+                localStorage.setItem('username', username);
+                document.getElementById("profileName").innerText = username;
+                document.getElementById("balance").innerText = balance.toFixed(2);
+                document.getElementById("loginForm").classList.add("hidden");
+                document.getElementById("mainContent").classList.remove("hidden");
+                localStorage.setItem('balance', balance);
+                localStorage.removeItem('miningStartTime');
+                document.getElementById("profileOptions").classList.remove("hidden");
             } else {
-                alert('Please enter valid credentials!');
+                alert("Please enter a username.");
             }
         }
 
-        document.getElementById('startMining').addEventListener('click', function() {
-            if (!mining) {
-                mining = true;
-                miningEndTime = Date.now() + (24 * 60 * 60 * 1000); 
-                interval = setInterval(() => {
-                    balance += (Math.random() * 0.0001).toFixed(8) * 1;
-                    totalBalance += (Math.random() * 0.0001).toFixed(8) * 1; 
-                    document.getElementById('balance').innerText = balance.toFixed(8);
-                    document.getElementById('totalBalance').innerText = totalBalance.toFixed(8); 
+        // Start Mining function
+        function startMining() {
+            if (!miningStartTime) {
+                miningStartTime = Date.now();
+                localStorage.setItem('miningStartTime', miningStartTime);
+                document.getElementById("startMiningBtn").disabled = true;
+                document.getElementById("miningStatus").classList.remove("hidden");
+                document.getElementById("miningStatus").innerText = "Mining Started...";
 
-                    if (Date.now() > miningEndTime) {
-                        clearInterval(interval);
-                        mining = false;
-                        document.getElementById('startMining').style.display = 'none';
-                        document.getElementById('stopMining').style.display = 'none';
-                        alert('Mining completed! 24 hours have passed.');
-                    }
-                }, 1000);
-                document.getElementById('stopMining').style.display = 'inline';
-                document.getElementById('startMining').style.display = 'none';
+                miningInterval = setInterval(miningProcess, 5000); // Mining every 5 seconds
             }
-        });
-
-        document.getElementById('stopMining').addEventListener('click', function() {
-            mining = false;
-            clearInterval(interval);
-            document.getElementById('startMining').style.display = 'inline';
-            document.getElementById('stopMining').style.display = 'none';
-        });
-
-        // Sidebar navigation functions
-        function showTask() {
-            document.getElementById('overlay').style.display = 'block';
-            document.getElementById('taskModal').style.display = 'block';
         }
 
-        function showInvite() {
-            alert("Invite feature coming soon!");
-        }
-
-        function showWallet() {
-            alert("Wallet feature coming soon!");
-        }
-
-        function showWithdraw() {
-            document.getElementById('withdrawPopup').style.display = 'block';
-            setTimeout(function() {
-                document.getElementById('withdrawPopup').style.display = 'none';
-            }, 2000);
-        }
-
-        function completeTask() {
-            points += 20;
-            totalBalance += 20;
-            document.getElementById('totalBalance').innerText = totalBalance.toFixed(8); 
-            alert('Task completed! You earned 20 points.');
-            document.getElementById('overlay').style.display = 'none';
-            document.getElementById('taskModal').style.display = 'none';
-        }
-
-        // 3D Cyberpunk Matrix Background with changing colors
-        const canvas = document.getElementById('bg');
-        const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-
-        const colors = ['#00FF00', '#32CD32', '#7FFF00', '#ADFF2F', '#9ACD32', '#228B22', '#006400']; 
-        let colorIndex = 0;
-
-        function drawMatrix() {
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = colors[colorIndex];
-            ctx.font = '20px monospace';
-            let chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-            let drops = [];
-            for (let i = 0; i < canvas.width / 20; i++) {
-                drops[i] = 1;
+        // Mining process
+        function miningProcess() {
+            const elapsedTime = Date.now() - miningStartTime;
+            const remainingTime = miningDuration - elapsedTime;
+            if (remainingTime <= 0) {
+                clearInterval(miningInterval);
+                document.getElementById("miningStatus").innerText = "Mining Completed!";
+                return;
             }
-            function draw() {
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                ctx.fillStyle = colors[colorIndex];
-                for (let i = 0; i < drops.length; i++) {
-                    let text = chars[Math.floor(Math.random() * chars.length)];
-                    ctx.fillText(text, i * 20, drops[i] * 20);
-                    if (drops[i] * 20 > canvas.height && Math.random() > 0.975) {
-                        drops[i] = 0;
-                    }
-                    drops[i]++;
-                }
-            }
-            setInterval(draw, 50);
+
+            const balanceIncrease = 0.005; // Every 5 seconds, increase balance by 0.005
+            balance += balanceIncrease;
+            document.getElementById("balance").innerText = balance.toFixed(3);
+            localStorage.setItem('balance', balance);
         }
 
-        setInterval(() => {
-            colorIndex = (colorIndex + 1) % colors.length;
-        }, 3000);
+        // Wallet Connect - MetaMask notification
+        function walletConnect() {
+            alert("MetaMask Extension Connected!");
+        }
 
-        drawMatrix();
+        // Withdraw - Airdrop Coming Soon
+        function withdraw() {
+            const popup = document.getElementById("popup");
+            document.getElementById("popupMessage").innerText = "Airdrop Coming Soon...";
+            popup.style.display = "block";
+            setTimeout(() => {
+                popup.style.display = "none";
+            }, 2000); // Hide after 2 seconds
+        }
+
+        // Logout function
+        function logout() {
+            loggedIn = false;
+            localStorage.removeItem('username');
+            localStorage.removeItem('balance');
+            localStorage.removeItem('miningStartTime');
+            document.getElementById("loginForm").classList.remove("hidden");
+            document.getElementById("mainContent").classList.add("hidden");
+            document.getElementById("profileOptions").classList.add("hidden");
+        }
     </script>
+
 </body>
 </html>
