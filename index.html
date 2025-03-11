@@ -13,6 +13,7 @@
         button:hover { background: #33cc33; }
         .hidden { display: none; }
         .profile-header { position: fixed; top: 10px; right: 20px; background: rgba(0, 0, 0, 0.7); padding: 10px; border-radius: 12px; box-shadow: 0px 4px 15px rgba(0, 255, 0, 0.4); }
+        .leaderboard-item { margin: 10px 0; }
     </style>
 </head>
 <body>
@@ -40,12 +41,14 @@
             <button onclick="getReferralLink()">Get Referral Link</button>
             <h2>Leaderboard</h2>
             <button onclick="viewLeaderboard()">View Top Miners</button>
+            <div id="leaderboard" class="hidden"></div>
         </div>
     </div>
     
     <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 
     <script>
         // Firebase Configuration
@@ -61,6 +64,7 @@
         };
         const app = firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
+        const db = firebase.firestore();
 
         let balance = parseFloat(localStorage.getItem('balance')) || 0;
         let miningInterval;
@@ -167,7 +171,34 @@
 
         // View Leaderboard Function
         function viewLeaderboard() {
-            alert("Leaderboard functionality is under construction.");
+            db.collection("leaderboard")
+                .orderBy("total_earnings", "desc") // Sort by total_earnings
+                .limit(10) // Limit to top 10 miners
+                .get()
+                .then((querySnapshot) => {
+                    const leaderboardDiv = document.getElementById("leaderboard");
+                    leaderboardDiv.innerHTML = '';  // Clear previous leaderboard data
+
+                    if (querySnapshot.empty) {
+                        leaderboardDiv.innerHTML = "<p>No data available in leaderboard.</p>";
+                        leaderboardDiv.classList.remove("hidden");
+                        return;
+                    }
+
+                    querySnapshot.forEach((doc) => {
+                        const data = doc.data();
+                        const leaderboardItem = document.createElement("div");
+                        leaderboardItem.classList.add("leaderboard-item");
+                        leaderboardItem.innerHTML = `
+                            <strong>${data.username}</strong> | Rank: ${data.rank} | Total Earnings: ${data.total_earnings.toFixed(2)} GEN
+                        `;
+                        leaderboardDiv.appendChild(leaderboardItem);
+                    });
+                    leaderboardDiv.classList.remove("hidden");
+                })
+                .catch((error) => {
+                    console.log("Error getting leaderboard: ", error);
+                });
         }
     </script>
 </body>
