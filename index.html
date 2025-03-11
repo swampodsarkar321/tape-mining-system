@@ -13,6 +13,27 @@
         button:hover { background: #33cc33; }
         .hidden { display: none; }
         .profile-header { position: fixed; top: 10px; right: 20px; background: rgba(0, 0, 0, 0.7); padding: 10px; border-radius: 12px; box-shadow: 0px 4px 15px rgba(0, 255, 0, 0.4); }
+        #popup { 
+            display: none; 
+            position: fixed; 
+            top: 20%; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            background-color: rgba(0, 0, 0, 0.9); 
+            padding: 30px; 
+            border-radius: 12px; 
+            color: white;
+            font-size: 20px;
+            box-shadow: 0px 4px 15px rgba(0, 255, 0, 0.8);
+            animation: popupAnimation 1s ease-out;
+        }
+
+        /* 3D effect for the popup */
+        @keyframes popupAnimation {
+            0% { transform: translateX(-50%) scale(0.5); opacity: 0; }
+            50% { transform: translateX(-50%) scale(1.1); opacity: 1; }
+            100% { transform: translateX(-50%) scale(1); opacity: 0; }
+        }
     </style>
 </head>
 <body>
@@ -40,6 +61,9 @@
             <button onclick="getReferralLink()">Get Referral Link</button>
         </div>
     </div>
+
+    <!-- Popup for Withdraw action -->
+    <div id="popup">Airdrop Coming Soon</div>
     
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -132,16 +156,14 @@
             }
         }
 
-        // Withdraw Function
+        // Withdraw Function (Popup only)
         function withdraw() {
-            if (balance >= 10) {
-                balance -= 10;
-                localStorage.setItem('balance', balance);
-                document.getElementById("balance").innerText = balance.toFixed(2);
-                alert("Withdrawal successful! 10 GEN deducted.");
-            } else {
-                alert("Insufficient balance! Minimum 10 GEN required.");
-            }
+            // Show popup when Withdraw is clicked
+            const popup = document.getElementById('popup');
+            popup.style.display = 'block';
+            setTimeout(() => {
+                popup.style.display = 'none'; // Hide popup after 2 seconds
+            }, 2000);
         }
 
         // Deposit Function
