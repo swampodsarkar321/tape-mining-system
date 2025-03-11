@@ -42,11 +42,12 @@
         </div>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-        
-        // Firebase configuration
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js"></script>
+
+    <script>
+        // Your web app's Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyCaqIi2f6ERwCcXijAt6ZyyovUz2A0eJ7k",
             authDomain: "tape-17372.firebaseapp.com",
@@ -59,121 +60,144 @@
         };
 
         // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-
+        const app = firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const firestore = firebase.firestore();
         let loggedIn = false;
-        let balance = parseFloat(localStorage.getItem('balance')) || 0;
-        let miningInterval;
+        let balance = 0;
 
+        // Check for user login state on page load
         window.onload = function() {
-            if (localStorage.getItem('username')) {
-                loggedIn = true;
-                document.getElementById("profileName").innerText = localStorage.getItem('username');
-                document.getElementById("balance").innerText = balance.toFixed(2);
-                document.getElementById("authForm").classList.add("hidden");
-                document.getElementById("dashboard").classList.remove("hidden");
-            }
+            auth.onAuthStateChanged(function(user) {
+                if (user) {
+                    loggedIn = true;
+                    document.getElementById("profileName").innerText = user.email;
+                    getBalanceFromFirestore(user.uid);
+                    document.getElementById("authForm").classList.add("hidden");
+                    document.getElementById("dashboard").classList.remove("hidden");
+                } else {
+                    loggedIn = false;
+                    document.getElementById("authForm").classList.remove("hidden");
+                    document.getElementById("dashboard").classList.add("hidden");
+                }
+            });
         };
 
+        // Sign-up or Login Function
         function authenticate() {
             const email = document.getElementById("email").value;
             const password = document.getElementById("password").value;
 
-            // Sign up or login
-            createUserWithEmailAndPassword(auth, email, password)
-                .then((userCredential) => {
-                    const user = userCredential.user;
-                    localStorage.setItem('username', email);
-                    localStorage.setItem('balance', balance);
-                    alert("Account created successfully!");
-                    loggedIn = true;
-                    document.getElementById("profileName").innerText = email;
-                    document.getElementById("authForm").classList.add("hidden");
-                    document.getElementById("dashboard").classList.remove("hidden");
-                })
-                .catch((error) => {
-                    // If user exists, login instead
-                    signInWithEmailAndPassword(auth, email, password)
-                        .then((userCredential) => {
-                            const user = userCredential.user;
-                            localStorage.setItem('username', email);
-                            loggedIn = true;
-                            document.getElementById("profileName").innerText = email;
-                            document.getElementById("authForm").classList.add("hidden");
-                            document.getElementById("dashboard").classList.remove("hidden");
-                        })
-                        .catch((error) => {
-                            alert("Incorrect password! Try again.");
-                        });
-                });
-        }
-
-        function startMining() {
-            if (!miningInterval) {
-                miningInterval = setInterval(() => {
-                    balance += 0.005;
-                    localStorage.setItem('balance', balance);
-                    document.getElementById("balance").innerText = balance.toFixed(2);
-                }, 5000);
-                document.getElementById("miningStatus").classList.remove("hidden");
-            } else {
-                alert("Mining already in progress.");
+            if (!loggedIn) {
+                // Register a new user
+                auth.createUserWithEmailAndPassword(email, password)
+                    .then((userCredential) => {
+                        loggedIn = true;
+                        alert("Account created successfully!");
+                        saveBalanceToFirestore(userCredential.user.uid, 0); // Set initial balance
+                    })
+                    .catch((error) => {
+                        // If user already exists, just log them in
+                        if (error.code === "auth/email-already-in-use") {
+                            auth.signInWithEmailAndPassword(email, password)
+                                .then((userCredential) => {
+                                    loggedIn = true;
+                                    alert("Logged in successfully!");
+                                    getBalanceFromFirestore(userCredential.user.uid);
+                                })
+                                .catch((error) => {
+                                    alert(error.message);
+                                });
+                        } else {
+                            alert(error.message);
+                        }
+                    });
             }
         }
 
+        // Get balance from Firestore
+        function getBalanceFromFirestore(uid) {
+            firestore.collection("users").doc(uid).get()
+                .then((doc) => {
+                    if (doc.exists) {
+                        balance = doc.data().balance;
+                        document.getElementById("balance").innerText = balance.toFixed(2);
+                    }
+                })
+                .catch((error) => {
+                    console.log("Error getting balance:", error);
+                });
+        }
+
+        // Save balance to Firestore
+        function saveBalanceToFirestore(uid, newBalance) {
+            firestore.collection("users").doc(uid).set({
+                balance: newBalance
+            }).then(() => {
+                console.log("Balance saved to Firestore");
+            }).catch((error) => {
+                console.log("Error saving balance:", error);
+            });
+        }
+
+        // Start Mining
+        function startMining() {
+            if (loggedIn) {
+                setInterval(() => {
+                    balance += 0.005;
+                    document.getElementById("balance").innerText = balance.toFixed(2);
+                    saveBalanceToFirestore(auth.currentUser.uid, balance); // Update Firestore balance
+                }, 5000);
+            } else {
+                alert("Please log in to start mining.");
+            }
+        }
+
+        // Withdraw
         function withdraw() {
             if (balance >= 10) {
                 balance -= 10;
-                localStorage.setItem('balance', balance);
                 document.getElementById("balance").innerText = balance.toFixed(2);
+                saveBalanceToFirestore(auth.currentUser.uid, balance); // Update Firestore balance
                 alert("Withdrawal successful! 10 GEN deducted.");
             } else {
                 alert("Insufficient balance! Minimum 10 GEN required.");
             }
         }
 
+        // Deposit
         function deposit() {
             let depositAmount = prompt("Enter amount to deposit:");
             depositAmount = parseFloat(depositAmount);
             if (!isNaN(depositAmount) && depositAmount > 0) {
                 balance += depositAmount;
-                localStorage.setItem('balance', balance);
                 document.getElementById("balance").innerText = balance.toFixed(2);
+                saveBalanceToFirestore(auth.currentUser.uid, balance); // Update Firestore balance
                 alert("Deposit successful!");
             } else {
                 alert("Invalid deposit amount.");
             }
         }
 
+        // Referral Link
         function getReferralLink() {
-            let refUsername = localStorage.getItem('username');
-            let refLink = `https://genzairdrop.com/?ref=${refUsername}`;
+            let refLink = `https://genzairdrop.com/?ref=${auth.currentUser.email}`;
             alert("Your referral link: " + refLink);
         }
 
+        // View Leaderboard
         function viewLeaderboard() {
-            let users = JSON.parse(localStorage.getItem('users')) || {};
-            users[localStorage.getItem('username')] = balance;
-            localStorage.setItem('users', JSON.stringify(users));
-
-            let sortedUsers = Object.entries(users).sort((a, b) => b[1] - a[1]);
-            let leaderboardMsg = "🏆 Leaderboard 🏆\n";
-            sortedUsers.forEach(([user, bal], index) => {
-                leaderboardMsg += `${index + 1}. ${user} - ${bal.toFixed(2)} GEN\n`;
-            });
-
-            alert(leaderboardMsg);
+            alert("Leaderboard feature coming soon!");
         }
 
+        // Logout
         function logout() {
-            // Clear Firebase user session
-            signOut(auth).then(() => {
-                localStorage.removeItem('username');
-                localStorage.removeItem('balance');
-                location.reload(); // Reload to show login form
+            auth.signOut().then(() => {
+                loggedIn = false;
+                document.getElementById("authForm").classList.remove("hidden");
+                document.getElementById("dashboard").classList.add("hidden");
             }).catch((error) => {
-                console.error("Error signing out: ", error);
+                alert(error.message);
             });
         }
     </script>
