@@ -3,307 +3,178 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GEN Z Airdrop</title>
+    <title>GEN Z Airdrop - Mining Site</title>
     <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            background: #1a1a1a;
-        }
-
-        canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-        }
-
-        .container {
-            position: relative;
-            max-width: 900px;
-            margin: 50px auto;
-            padding: 30px;
-            background-color: rgba(0, 0, 0, 0.85);
-            border-radius: 12px;
-            box-shadow: 0px 10px 30px rgba(0, 255, 0, 0.2);
-            color: #fff;
-        }
-
-        h1 {
-            font-size: 36px;
-            color: #00ff00;
-            text-transform: uppercase;
-            margin-bottom: 30px;
-            font-weight: bold;
-        }
-
-        h2 {
-            font-size: 24px;
-            color: #fff;
-            margin: 10px 0;
-        }
-
-        input, button {
-            padding: 12px 20px;
-            margin: 15px 0;
-            border-radius: 8px;
-            border: none;
-            background: linear-gradient(145deg, #00ff00, #33cc33);
-            color: #000;
-            font-size: 16px;
-            transition: all 0.3s ease;
-        }
-
-        input:focus, button:hover {
-            transform: scale(1.05);
-            box-shadow: 0px 4px 20px rgba(0, 255, 0, 0.6);
-        }
-
-        .profile-header {
-            position: fixed;
-            top: 10px;
-            right: 20px;
-            background-color: rgba(0, 0, 0, 0.7);
-            padding: 10px;
-            border-radius: 12px;
-            box-shadow: 0px 4px 15px rgba(0, 255, 0, 0.4);
-            color: #00ff00;
-            font-size: 18px;
-            z-index: 9999;
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        .popup {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: rgba(0, 0, 0, 0.8);
-            color: #00ff00;
-            padding: 20px;
-            border-radius: 12px;
-            z-index: 9999;
-            display: none;
-            font-size: 18px;
-            box-shadow: 0px 5px 20px rgba(0, 255, 0, 0.6);
-        }
-
-        .profile-info {
-            margin: 20px 0;
-        }
-
-        #startMiningBtn {
-            width: 200px;
-            background: linear-gradient(145deg, #00cc00, #33cc33);
-        }
-
-        #startMiningBtn:disabled {
-            background-color: #777;
-        }
-
-        #startMiningBtn:hover {
-            background: linear-gradient(145deg, #33cc33, #00ff00);
-        }
-
-        /* Heartbeat animation */
-        @keyframes heartbeat {
-            0% {
-                transform: scale(1);
-            }
-            25% {
-                transform: scale(1.1);
-            }
-            50% {
-                transform: scale(1);
-            }
-            75% {
-                transform: scale(1.1);
-            }
-            100% {
-                transform: scale(1);
-            }
-        }
-
-        /* Apply the heartbeat animation to the mining status when mining starts */
-        .mining-status.heartbeat {
-            animation: heartbeat 1s infinite;
-            font-size: 22px;
-            color: #00ff00;
-        }
-
-        /* Styling for the Pre Market button */
-        .pre-market-btn {
-            padding: 12px 20px;
-            margin: 15px 0;
-            background: linear-gradient(145deg, #ff6a00, #ff9e00);
-            color: #fff;
-            font-size: 16px;
-            border-radius: 8px;
-            border: none;
-            text-align: center;
-            transition: all 0.3s ease;
-            width: 100%;
-        }
-
-        .pre-market-btn:hover {
-            background: linear-gradient(145deg, #ff9e00, #ff6a00);
-        }
-
+        body, html { margin: 0; padding: 0; height: 100%; background: #1a1a1a; color: white; font-family: Arial, sans-serif; }
+        .container { max-width: 900px; margin: 50px auto; padding: 30px; background: rgba(0, 0, 0, 0.85); border-radius: 12px; box-shadow: 0px 10px 30px rgba(0, 255, 0, 0.2); }
+        h1 { color: #00ff00; text-transform: uppercase; }
+        input, button { padding: 12px; margin: 10px 0; border-radius: 8px; border: none; font-size: 16px; }
+        button { background: #00ff00; color: black; cursor: pointer; }
+        button:hover { background: #33cc33; }
+        .hidden { display: none; }
+        .profile-header { position: fixed; top: 10px; right: 20px; background: rgba(0, 0, 0, 0.7); padding: 10px; border-radius: 12px; box-shadow: 0px 4px 15px rgba(0, 255, 0, 0.4); }
     </style>
 </head>
 <body>
-
-    <!-- Canvas for background gradient -->
-    <canvas id="gradientCanvas"></canvas>
-
     <div class="container">
-        <h1>GEN Z Airdrop</h1>
-
-        <!-- Login Form -->
-        <div id="loginForm">
-            <h2>Login</h2>
-            <input type="text" id="username" placeholder="Enter Username" required>
-            <button onclick="login()">Login</button>
+        <h1>GEN Z Airdrop - Mining Site</h1>
+        <div id="authForm">
+            <h2>Login / Signup</h2>
+            <input type="email" id="email" placeholder="Enter Email" required>
+            <input type="password" id="password" placeholder="Enter Password" required>
+            <button onclick="authenticate()">Login / Signup</button>
         </div>
-
-        <!-- Main Content -->
-        <div id="mainContent" class="hidden">
-            <div id="profileHeader" class="profile-header">
+        <div id="dashboard" class="hidden">
+            <div class="profile-header">
                 <span id="profileName"></span> | Balance: <span id="balance">0.00</span> GEN
+                <button onclick="logout()">Logout</button>
             </div>
-
             <h2>Start Mining</h2>
             <button id="startMiningBtn" onclick="startMining()">Start Mining</button>
-            <div id="miningStatus" class="mining-status hidden"></div>
-
-            <button onclick="logout()">Logout</button>
-
-            <!-- Profile options -->
-            <div id="profileOptions" class="hidden">
-                <button onclick="walletConnect()">Wallet Connect</button>
-                <button onclick="withdraw()">Withdraw</button>
-                <!-- Pre Market Button -->
-                <button class="pre-market-btn" onclick="openPreMarket()">Pre Market</button>
-            </div>
-        </div>
-
-        <!-- Popups -->
-        <div id="popup" class="popup">
-            <p id="popupMessage"></p>
+            <div id="miningStatus" class="hidden">Mining in Progress...</div>
+            <h2>Wallet</h2>
+            <button onclick="withdraw()">Withdraw</button>
+            <button onclick="deposit()">Deposit</button>
+            <h2>Referral System</h2>
+            <button onclick="getReferralLink()">Get Referral Link</button>
+            <h2>Leaderboard</h2>
+            <button onclick="viewLeaderboard()">View Top Miners</button>
         </div>
     </div>
 
-    <script>
-        // Full screen gradient canvas
-        const canvas = document.getElementById("gradientCanvas");
-        const ctx = canvas.getContext("2d");
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+        
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCaqIi2f6ERwCcXijAt6ZyyovUz2A0eJ7k",
+            authDomain: "tape-17372.firebaseapp.com",
+            databaseURL: "https://tape-17372-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "tape-17372",
+            storageBucket: "tape-17372.firebasestorage.app",
+            messagingSenderId: "727441052587",
+            appId: "1:727441052587:web:6be3489d0869be4e4a78ee",
+            measurementId: "G-PHC8B2P84G"
+        };
 
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-
-        // Create gradient background
-        const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-        gradient.addColorStop(0, '#ff00ff');
-        gradient.addColorStop(1, '#00ff00');
-        ctx.fillStyle = gradient;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        // Keep the canvas responsive on window resize
-        window.addEventListener('resize', () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            ctx.fillStyle = gradient;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-        });
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
 
         let loggedIn = false;
-        let balance = 0;
+        let balance = parseFloat(localStorage.getItem('balance')) || 0;
         let miningInterval;
-        let miningStartTime = null;
-        let miningDuration = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 
-        // Check if user is logged in and mining is ongoing
         window.onload = function() {
-            if (localStorage.getItem('username') && localStorage.getItem('balance')) {
+            if (localStorage.getItem('username')) {
                 loggedIn = true;
-                balance = parseFloat(localStorage.getItem('balance'));
                 document.getElementById("profileName").innerText = localStorage.getItem('username');
                 document.getElementById("balance").innerText = balance.toFixed(2);
-                document.getElementById("loginForm").classList.add("hidden");
-                document.getElementById("mainContent").classList.remove("hidden");
-                document.getElementById("profileOptions").classList.remove("hidden");
+                document.getElementById("authForm").classList.add("hidden");
+                document.getElementById("dashboard").classList.remove("hidden");
             }
         };
 
-        // Login function
-        function login() {
-            const username = document.getElementById("username").value;
-            if (username) {
-                loggedIn = true;
-                balance = 0;
-                localStorage.setItem('username', username);
-                document.getElementById("profileName").innerText = username;
-                document.getElementById("balance").innerText = balance.toFixed(2);
-                document.getElementById("loginForm").classList.add("hidden");
-                document.getElementById("mainContent").classList.remove("hidden");
-                localStorage.setItem('balance', balance);
-                localStorage.removeItem('miningStartTime');
-                document.getElementById("profileOptions").classList.remove("hidden");
-            } else {
-                alert("Please enter a username.");
-            }
+        function authenticate() {
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+
+            // Sign up or login
+            createUserWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    const user = userCredential.user;
+                    localStorage.setItem('username', email);
+                    localStorage.setItem('balance', balance);
+                    alert("Account created successfully!");
+                    loggedIn = true;
+                    document.getElementById("profileName").innerText = email;
+                    document.getElementById("authForm").classList.add("hidden");
+                    document.getElementById("dashboard").classList.remove("hidden");
+                })
+                .catch((error) => {
+                    // If user exists, login instead
+                    signInWithEmailAndPassword(auth, email, password)
+                        .then((userCredential) => {
+                            const user = userCredential.user;
+                            localStorage.setItem('username', email);
+                            loggedIn = true;
+                            document.getElementById("profileName").innerText = email;
+                            document.getElementById("authForm").classList.add("hidden");
+                            document.getElementById("dashboard").classList.remove("hidden");
+                        })
+                        .catch((error) => {
+                            alert("Incorrect password! Try again.");
+                        });
+                });
         }
 
-        // Start Mining function
         function startMining() {
-            if (!miningStartTime) {
-                miningStartTime = Date.now();
-                localStorage.setItem('miningStartTime', miningStartTime);
+            if (!miningInterval) {
+                miningInterval = setInterval(() => {
+                    balance += 0.005;
+                    localStorage.setItem('balance', balance);
+                    document.getElementById("balance").innerText = balance.toFixed(2);
+                }, 5000);
+                document.getElementById("miningStatus").classList.remove("hidden");
+            } else {
+                alert("Mining already in progress.");
             }
+        }
 
-            // Add balance every 5 seconds
-            miningInterval = setInterval(() => {
-                balance += 0.005;
+        function withdraw() {
+            if (balance >= 10) {
+                balance -= 10;
                 localStorage.setItem('balance', balance);
                 document.getElementById("balance").innerText = balance.toFixed(2);
-            }, 5000);
-
-            // Display heartbeat-style animation when mining starts
-            document.getElementById("miningStatus").classList.remove("hidden");
-            document.getElementById("miningStatus").classList.add("heartbeat");
-            document.getElementById("miningStatus").innerText = "Mining in Progress...";
+                alert("Withdrawal successful! 10 GEN deducted.");
+            } else {
+                alert("Insufficient balance! Minimum 10 GEN required.");
+            }
         }
 
-        // Wallet Connect function
-        function walletConnect() {
-            alert("MetaMask extension will be connected.");
+        function deposit() {
+            let depositAmount = prompt("Enter amount to deposit:");
+            depositAmount = parseFloat(depositAmount);
+            if (!isNaN(depositAmount) && depositAmount > 0) {
+                balance += depositAmount;
+                localStorage.setItem('balance', balance);
+                document.getElementById("balance").innerText = balance.toFixed(2);
+                alert("Deposit successful!");
+            } else {
+                alert("Invalid deposit amount.");
+            }
         }
 
-        // Withdraw function
-        function withdraw() {
-            alert("Withdrawing not available yet.");
+        function getReferralLink() {
+            let refUsername = localStorage.getItem('username');
+            let refLink = `https://genzairdrop.com/?ref=${refUsername}`;
+            alert("Your referral link: " + refLink);
         }
 
-        // Open Pre Market link
-        function openPreMarket() {
-            window.open("https://www.bitget.com/pre-market", "_blank");
+        function viewLeaderboard() {
+            let users = JSON.parse(localStorage.getItem('users')) || {};
+            users[localStorage.getItem('username')] = balance;
+            localStorage.setItem('users', JSON.stringify(users));
+
+            let sortedUsers = Object.entries(users).sort((a, b) => b[1] - a[1]);
+            let leaderboardMsg = "🏆 Leaderboard 🏆\n";
+            sortedUsers.forEach(([user, bal], index) => {
+                leaderboardMsg += `${index + 1}. ${user} - ${bal.toFixed(2)} GEN\n`;
+            });
+
+            alert(leaderboardMsg);
         }
 
-        // Logout function
         function logout() {
-            localStorage.clear();
-            loggedIn = false;
-            balance = 0;
-            document.getElementById("loginForm").classList.remove("hidden");
-            document.getElementById("mainContent").classList.add("hidden");
-            document.getElementById("profileOptions").classList.add("hidden");
-            document.getElementById("miningStatus").classList.add("hidden");
+            // Clear Firebase user session
+            signOut(auth).then(() => {
+                localStorage.removeItem('username');
+                localStorage.removeItem('balance');
+                location.reload(); // Reload to show login form
+            }).catch((error) => {
+                console.error("Error signing out: ", error);
+            });
         }
     </script>
 </body>
