@@ -22,7 +22,8 @@
             <h2>Login / Signup</h2>
             <input type="email" id="email" placeholder="Enter Email" required>
             <input type="password" id="password" placeholder="Enter Password" required>
-            <button onclick="authenticate()">Login / Signup</button>
+            <button onclick="signUp()">Sign Up</button>
+            <button onclick="login()">Login</button>
         </div>
         <div id="dashboard" class="hidden">
             <div class="profile-header">
@@ -41,13 +42,13 @@
             <button onclick="viewLeaderboard()">View Top Miners</button>
         </div>
     </div>
-
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js"></script>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
 
     <script>
-        // Your web app's Firebase configuration
+        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyCaqIi2f6ERwCcXijAt6ZyyovUz2A0eJ7k",
             authDomain: "tape-17372.firebaseapp.com",
@@ -58,147 +59,115 @@
             appId: "1:727441052587:web:6be3489d0869be4e4a78ee",
             measurementId: "G-PHC8B2P84G"
         };
-
-        // Initialize Firebase
         const app = firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
-        const firestore = firebase.firestore();
-        let loggedIn = false;
-        let balance = 0;
 
-        // Check for user login state on page load
-        window.onload = function() {
-            auth.onAuthStateChanged(function(user) {
-                if (user) {
-                    loggedIn = true;
-                    document.getElementById("profileName").innerText = user.email;
-                    getBalanceFromFirestore(user.uid);
-                    document.getElementById("authForm").classList.add("hidden");
-                    document.getElementById("dashboard").classList.remove("hidden");
-                } else {
-                    loggedIn = false;
-                    document.getElementById("authForm").classList.remove("hidden");
-                    document.getElementById("dashboard").classList.add("hidden");
-                }
-            });
-        };
+        let balance = parseFloat(localStorage.getItem('balance')) || 0;
+        let miningInterval;
 
-        // Sign-up or Login Function
-        function authenticate() {
+        // Check if user is logged in
+        firebase.auth().onAuthStateChanged(function(user) {
+            if (user) {
+                document.getElementById("authForm").classList.add("hidden");
+                document.getElementById("dashboard").classList.remove("hidden");
+                document.getElementById("profileName").innerText = user.email;
+                document.getElementById("balance").innerText = balance.toFixed(2);
+            } else {
+                document.getElementById("authForm").classList.remove("hidden");
+                document.getElementById("dashboard").classList.add("hidden");
+            }
+        });
+
+        // Sign Up Function
+        function signUp() {
             const email = document.getElementById("email").value;
             const password = document.getElementById("password").value;
-
-            if (!loggedIn) {
-                // Register a new user
-                auth.createUserWithEmailAndPassword(email, password)
-                    .then((userCredential) => {
-                        loggedIn = true;
-                        alert("Account created successfully!");
-                        saveBalanceToFirestore(userCredential.user.uid, 0); // Set initial balance
-                    })
-                    .catch((error) => {
-                        // If user already exists, just log them in
-                        if (error.code === "auth/email-already-in-use") {
-                            auth.signInWithEmailAndPassword(email, password)
-                                .then((userCredential) => {
-                                    loggedIn = true;
-                                    alert("Logged in successfully!");
-                                    getBalanceFromFirestore(userCredential.user.uid);
-                                })
-                                .catch((error) => {
-                                    alert(error.message);
-                                });
-                        } else {
-                            alert(error.message);
-                        }
-                    });
-            }
-        }
-
-        // Get balance from Firestore
-        function getBalanceFromFirestore(uid) {
-            firestore.collection("users").doc(uid).get()
-                .then((doc) => {
-                    if (doc.exists) {
-                        balance = doc.data().balance;
-                        document.getElementById("balance").innerText = balance.toFixed(2);
-                    }
+            auth.createUserWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    alert("Signup Successful!");
+                    const user = userCredential.user;
+                    console.log(user);
                 })
                 .catch((error) => {
-                    console.log("Error getting balance:", error);
+                    alert(error.message);
                 });
         }
 
-        // Save balance to Firestore
-        function saveBalanceToFirestore(uid, newBalance) {
-            firestore.collection("users").doc(uid).set({
-                balance: newBalance
-            }).then(() => {
-                console.log("Balance saved to Firestore");
+        // Login Function
+        function login() {
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+            auth.signInWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    alert("Login Successful!");
+                    const user = userCredential.user;
+                    console.log(user);
+                })
+                .catch((error) => {
+                    alert(error.message);
+                });
+        }
+
+        // Logout Function
+        function logout() {
+            auth.signOut().then(() => {
+                alert("Logged out successfully");
+                location.reload();
             }).catch((error) => {
-                console.log("Error saving balance:", error);
+                alert(error.message);
             });
         }
 
         // Start Mining
         function startMining() {
-            if (loggedIn) {
-                setInterval(() => {
+            if (!miningInterval) {
+                miningInterval = setInterval(() => {
                     balance += 0.005;
+                    localStorage.setItem('balance', balance);
                     document.getElementById("balance").innerText = balance.toFixed(2);
-                    saveBalanceToFirestore(auth.currentUser.uid, balance); // Update Firestore balance
                 }, 5000);
+                document.getElementById("miningStatus").classList.remove("hidden");
             } else {
-                alert("Please log in to start mining.");
+                alert("Mining already in progress.");
             }
         }
 
-        // Withdraw
+        // Withdraw Function
         function withdraw() {
             if (balance >= 10) {
                 balance -= 10;
+                localStorage.setItem('balance', balance);
                 document.getElementById("balance").innerText = balance.toFixed(2);
-                saveBalanceToFirestore(auth.currentUser.uid, balance); // Update Firestore balance
                 alert("Withdrawal successful! 10 GEN deducted.");
             } else {
                 alert("Insufficient balance! Minimum 10 GEN required.");
             }
         }
 
-        // Deposit
+        // Deposit Function
         function deposit() {
             let depositAmount = prompt("Enter amount to deposit:");
             depositAmount = parseFloat(depositAmount);
             if (!isNaN(depositAmount) && depositAmount > 0) {
                 balance += depositAmount;
+                localStorage.setItem('balance', balance);
                 document.getElementById("balance").innerText = balance.toFixed(2);
-                saveBalanceToFirestore(auth.currentUser.uid, balance); // Update Firestore balance
                 alert("Deposit successful!");
             } else {
                 alert("Invalid deposit amount.");
             }
         }
 
-        // Referral Link
+        // Referral Link Function
         function getReferralLink() {
-            let refLink = `https://genzairdrop.com/?ref=${auth.currentUser.email}`;
+            let refUsername = auth.currentUser.email;
+            let refLink = `https://genzairdrop.com/?ref=${refUsername}`;
             alert("Your referral link: " + refLink);
         }
 
-        // View Leaderboard
+        // View Leaderboard Function
         function viewLeaderboard() {
-            alert("Leaderboard feature coming soon!");
-        }
-
-        // Logout
-        function logout() {
-            auth.signOut().then(() => {
-                loggedIn = false;
-                document.getElementById("authForm").classList.remove("hidden");
-                document.getElementById("dashboard").classList.add("hidden");
-            }).catch((error) => {
-                alert(error.message);
-            });
+            alert("Leaderboard functionality is under construction.");
         }
     </script>
 </body>
