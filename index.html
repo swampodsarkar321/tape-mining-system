@@ -1,191 +1,176 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GEN Z Airdrop - Mining Site</title>
-    <style>
-        body, html { margin: 0; padding: 0; height: 100%; background: #1a1a1a; color: white; font-family: Arial, sans-serif; }
-        .container { max-width: 900px; margin: 50px auto; padding: 30px; background: rgba(0, 0, 0, 0.85); border-radius: 12px; box-shadow: 0px 10px 30px rgba(0, 255, 0, 0.2); }
-        h1 { color: #00ff00; text-transform: uppercase; }
-        input, button { padding: 12px; margin: 10px 0; border-radius: 8px; border: none; font-size: 16px; }
-        button { background: #00ff00; color: black; cursor: pointer; }
-        button:hover { background: #33cc33; }
-        .hidden { display: none; }
-        .profile-header { position: fixed; top: 10px; right: 20px; background: rgba(0, 0, 0, 0.7); padding: 10px; border-radius: 12px; box-shadow: 0px 4px 15px rgba(0, 255, 0, 0.4); }
-        #popup { 
-            display: none; 
-            position: fixed; 
-            top: 20%; 
-            left: 50%; 
-            transform: translateX(-50%); 
-            background-color: rgba(0, 0, 0, 0.9); 
-            padding: 30px; 
-            border-radius: 12px; 
-            color: white;
-            font-size: 20px;
-            box-shadow: 0px 4px 15px rgba(0, 255, 0, 0.8);
-            animation: popupAnimation 1s ease-out;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Messenger</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
 
-        /* 3D effect for the popup */
-        @keyframes popupAnimation {
-            0% { transform: translateX(-50%) scale(0.5); opacity: 0; }
-            50% { transform: translateX(-50%) scale(1.1); opacity: 1; }
-            100% { transform: translateX(-50%) scale(1); opacity: 0; }
-        }
-    </style>
+    #app {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+    }
+
+    .form, .chat-box {
+      width: 300px;
+      text-align: center;
+    }
+
+    input, textarea {
+      width: 100%;
+      margin: 10px 0;
+      padding: 8px;
+    }
+
+    button {
+      padding: 10px;
+      cursor: pointer;
+    }
+
+    #messages {
+      max-height: 300px;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      margin-bottom: 10px;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>GEN Z Airdrop - Mining Site</h1>
-        <div id="authForm">
-            <h2>Login / Signup</h2>
-            <input type="email" id="email" placeholder="Enter Email" required>
-            <input type="password" id="password" placeholder="Enter Password" required>
-            <button onclick="signUp()">Sign Up</button>
-            <button onclick="login()">Login</button>
-        </div>
-        <div id="dashboard" class="hidden">
-            <div class="profile-header">
-                <span id="profileName"></span> | Balance: <span id="balance">0.00</span> GEN
-                <button onclick="logout()">Logout</button>
-            </div>
-            <h2>Start Mining</h2>
-            <button id="startMiningBtn" onclick="startMining()">Start Mining</button>
-            <div id="miningStatus" class="hidden">Mining in Progress...</div>
-            <h2>Wallet</h2>
-            <button onclick="withdraw()">Withdraw</button>
-            <button onclick="deposit()">Deposit</button>
-            <h2>Referral System</h2>
-            <button onclick="getReferralLink()">Get Referral Link</button>
-        </div>
+  <div id="app">
+    <div id="login-form" class="form">
+      <h2>Login</h2>
+      <input type="email" id="email" placeholder="Enter Email">
+      <input type="password" id="password" placeholder="Enter Password">
+      <button onclick="login()">Login</button>
+      <button onclick="signup()">Sign Up</button>
     </div>
+    <div id="chat-box" class="chat-box" style="display: none;">
+      <div id="messages"></div>
+      <textarea id="message" placeholder="Type a message"></textarea>
+      <button onclick="sendMessage()">Send</button>
+      <button onclick="logout()">Logout</button>
+    </div>
+  </div>
 
-    <!-- Popup for Withdraw action -->
-    <div id="popup">Airdrop Coming Soon</div>
-    
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+  <!-- Firebase SDKs -->
+  <script type="module">
+    // Import the functions you need from the SDKs
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+    import { getFirestore, collection, addDoc, query, orderBy, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 
-    <script>
-        // Firebase Configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyCaqIi2f6ERwCcXijAt6ZyyovUz2A0eJ7k",
-            authDomain: "tape-17372.firebaseapp.com",
-            databaseURL: "https://tape-17372-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "tape-17372",
-            storageBucket: "tape-17372.firebasestorage.app",
-            messagingSenderId: "727441052587",
-            appId: "1:727441052587:web:6be3489d0869be4e4a78ee",
-            measurementId: "G-PHC8B2P84G"
-        };
-        const app = firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyBU4JeSJe5SJYhFocDRo0aEpkz4Z9kj8yo",
+      authDomain: "welook-massenger.firebaseapp.com",
+      projectId: "welook-massenger",
+      storageBucket: "welook-massenger.firebasestorage.app",
+      messagingSenderId: "709487987004",
+      appId: "1:709487987004:web:3c5a623b99e616d844f639",
+      measurementId: "G-8B09NT7GTR"
+    };
 
-        let balance = parseFloat(localStorage.getItem('balance')) || 0;
-        let miningInterval;
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const auth = getAuth(app);  // Initialize Firebase Auth here
+    const db = getFirestore(app);
 
-        // Check if user is logged in
-        firebase.auth().onAuthStateChanged(function(user) {
-            if (user) {
-                document.getElementById("authForm").classList.add("hidden");
-                document.getElementById("dashboard").classList.remove("hidden");
-                document.getElementById("profileName").innerText = user.email;
-                document.getElementById("balance").innerText = balance.toFixed(2);
-            } else {
-                document.getElementById("authForm").classList.remove("hidden");
-                document.getElementById("dashboard").classList.add("hidden");
-            }
-        });
+    let user = null;
 
-        // Sign Up Function
-        function signUp() {
-            const email = document.getElementById("email").value;
-            const password = document.getElementById("password").value;
-            auth.createUserWithEmailAndPassword(email, password)
-                .then((userCredential) => {
-                    alert("Signup Successful!");
-                    const user = userCredential.user;
-                    console.log(user);
-                })
-                .catch((error) => {
-                    alert(error.message);
-                });
-        }
+    // Handle login
+    async function login() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+        user = auth.currentUser;
+        displayChat();
+      } catch (error) {
+        alert("Error: " + error.message);
+      }
+    }
 
-        // Login Function
-        function login() {
-            const email = document.getElementById("email").value;
-            const password = document.getElementById("password").value;
-            auth.signInWithEmailAndPassword(email, password)
-                .then((userCredential) => {
-                    alert("Login Successful!");
-                    const user = userCredential.user;
-                    console.log(user);
-                })
-                .catch((error) => {
-                    alert(error.message);
-                });
-        }
+    // Handle sign-up
+    async function signup() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
 
-        // Logout Function
-        function logout() {
-            auth.signOut().then(() => {
-                alert("Logged out successfully");
-                location.reload();
-            }).catch((error) => {
-                alert(error.message);
-            });
-        }
+      try {
+        await createUserWithEmailAndPassword(auth, email, password);
+        user = auth.currentUser;
+        displayChat();
+      } catch (error) {
+        console.error("Signup Error:", error);  // Log the error
+        alert("Error: " + error.message);
+      }
+    }
 
-        // Start Mining
-        function startMining() {
-            if (!miningInterval) {
-                miningInterval = setInterval(() => {
-                    balance += 0.005;
-                    localStorage.setItem('balance', balance);
-                    document.getElementById("balance").innerText = balance.toFixed(2);
-                }, 5000);
-                document.getElementById("miningStatus").classList.remove("hidden");
-            } else {
-                alert("Mining already in progress.");
-            }
-        }
+    // Display chat interface
+    function displayChat() {
+      document.getElementById('login-form').style.display = 'none';
+      document.getElementById('chat-box').style.display = 'block';
+      loadMessages();
+    }
 
-        // Withdraw Function (Popup only)
-        function withdraw() {
-            // Show popup when Withdraw is clicked
-            const popup = document.getElementById('popup');
-            popup.style.display = 'block';
-            setTimeout(() => {
-                popup.style.display = 'none'; // Hide popup after 2 seconds
-            }, 2000);
-        }
+    // Load chat messages
+    async function loadMessages() {
+      const messagesRef = collection(db, 'messages');
+      const q = query(messagesRef, orderBy('timestamp'));
+      const snapshot = await getDocs(q);
+      const messagesDiv = document.getElementById('messages');
+      messagesDiv.innerHTML = '';
 
-        // Deposit Function
-        function deposit() {
-            let depositAmount = prompt("Enter amount to deposit:");
-            depositAmount = parseFloat(depositAmount);
-            if (!isNaN(depositAmount) && depositAmount > 0) {
-                balance += depositAmount;
-                localStorage.setItem('balance', balance);
-                document.getElementById("balance").innerText = balance.toFixed(2);
-                alert("Deposit successful!");
-            } else {
-                alert("Invalid deposit amount.");
-            }
-        }
+      snapshot.forEach(doc => {
+        const message = doc.data();
+        const div = document.createElement('div');
+        div.textContent = message.text;
+        messagesDiv.appendChild(div);
+      });
+    }
 
-        // Referral Link Function
-        function getReferralLink() {
-            let refUsername = auth.currentUser.email;
-            let refLink = `https://genzairdrop.com/?ref=${refUsername}`;
-            alert("Your referral link: " + refLink);
-        }
-    </script>
+    // Send message
+    async function sendMessage() {
+      const message = document.getElementById('message').value;
+
+      if (message.trim() === '') return;
+
+      await addDoc(collection(db, 'messages'), {
+        text: message,
+        user: user.email,
+        timestamp: serverTimestamp()
+      });
+
+      document.getElementById('message').value = '';
+      loadMessages();
+    }
+
+    // Logout
+    async function logout() {
+      await signOut(auth);
+      user = null;
+      document.getElementById('login-form').style.display = 'block';
+      document.getElementById('chat-box').style.display = 'none';
+    }
+
+    // Listen for auth state changes
+    auth.onAuthStateChanged(currentUser => {
+      if (currentUser) {
+        user = currentUser;
+        displayChat();
+      } else {
+        document.getElementById('login-form').style.display = 'block';
+        document.getElementById('chat-box').style.display = 'none';
+      }
+    });
+  </script>
 </body>
 </html>
