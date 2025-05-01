@@ -3,174 +3,613 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Messenger</title>
+  <title>GEN Z Mining - Bitcoin Cloud Mining</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
+    :root {
+      --primary: #f7931a;
+      --primary-dark: #e07b0c;
+      --dark: #0a0a0a;
+      --dark-light: #1a1a1a;
+      --light: #f8f9fa;
+      --danger: #dc3545;
+      --success: #28a745;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
     body {
-      font-family: Arial, sans-serif;
+      background-color: var(--dark);
+      color: var(--light);
+      line-height: 1.6;
     }
-
-    #app {
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    /* Header */
+    header {
+      background-color: var(--dark-light);
+      padding: 15px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .header-container {
       display: flex;
-      justify-content: center;
+      justify-content: space-between;
       align-items: center;
-      height: 100vh;
-      flex-direction: column;
     }
-
-    .form, .chat-box {
-      width: 300px;
+    
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .logo i {
+      color: var(--primary);
+      font-size: 24px;
+    }
+    
+    .logo h1 {
+      font-size: 20px;
+      font-weight: 700;
+    }
+    
+    .user-menu {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    
+    .user-menu span {
+      font-weight: 500;
+    }
+    
+    .btn {
+      padding: 8px 15px;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-primary {
+      background-color: var(--primary);
+      color: #000;
+    }
+    
+    .btn-primary:hover {
+      background-color: var(--primary-dark);
+    }
+    
+    .btn-danger {
+      background-color: var(--danger);
+      color: white;
+    }
+    
+    /* Dashboard */
+    .dashboard {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+      margin-top: 30px;
+    }
+    
+    @media (min-width: 768px) {
+      .dashboard {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+    
+    .card {
+      background-color: var(--dark-light);
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .card-header h2 {
+      font-size: 18px;
+      font-weight: 600;
+    }
+    
+    .card-header i {
+      color: var(--primary);
+      font-size: 20px;
+    }
+    
+    .balance-amount {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--primary);
+      margin: 10px 0;
+    }
+    
+    /* Mining Section */
+    .mining-status {
+      text-align: center;
+      margin: 20px 0;
+    }
+    
+    .mining-btn {
+      padding: 12px 30px;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 6px;
+      width: 100%;
+      max-width: 300px;
+      margin: 0 auto;
+      display: block;
+    }
+    
+    .mining-stats {
+      display: flex;
+      justify-content: space-around;
+      margin: 20px 0;
+    }
+    
+    .stat-item {
       text-align: center;
     }
-
-    input, textarea {
+    
+    .stat-value {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--primary);
+    }
+    
+    .stat-label {
+      font-size: 12px;
+      opacity: 0.8;
+    }
+    
+    .mining-progress {
+      height: 8px;
+      background-color: rgba(255,255,255,0.1);
+      border-radius: 4px;
+      margin: 20px 0;
+      overflow: hidden;
+    }
+    
+    .progress-bar {
+      height: 100%;
+      width: 0;
+      background-color: var(--primary);
+      transition: width 0.5s ease;
+    }
+    
+    /* Forms */
+    .form-group {
+      margin-bottom: 15px;
+    }
+    
+    .form-label {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 14px;
+    }
+    
+    .form-control {
       width: 100%;
-      margin: 10px 0;
-      padding: 8px;
-    }
-
-    button {
       padding: 10px;
-      cursor: pointer;
+      background-color: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 4px;
+      color: white;
     }
-
-    #messages {
-      max-height: 300px;
-      overflow-y: auto;
-      border: 1px solid #ccc;
-      margin-bottom: 10px;
+    
+    /* Referral */
+    .referral-link {
+      background-color: rgba(255,255,255,0.05);
+      padding: 10px;
+      border-radius: 4px;
+      font-family: monospace;
+      word-break: break-all;
+      margin: 10px 0;
+    }
+    
+    /* Tasks */
+    .task-list {
+      margin-top: 15px;
+    }
+    
+    .task-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      background-color: rgba(255,255,255,0.03);
+      border-radius: 4px;
+      margin-bottom: 8px;
+    }
+    
+    .task-reward {
+      color: var(--primary);
+      font-weight: 600;
+    }
+    
+    /* Notification */
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background-color: var(--success);
+      color: white;
+      padding: 15px;
+      border-radius: 4px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      display: none;
+      z-index: 1000;
+    }
+    
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 20px;
+      margin-top: 40px;
+      font-size: 12px;
+      opacity: 0.7;
     }
   </style>
 </head>
 <body>
-  <div id="app">
-    <div id="login-form" class="form">
-      <h2>Login</h2>
-      <input type="email" id="email" placeholder="Enter Email">
-      <input type="password" id="password" placeholder="Enter Password">
-      <button onclick="login()">Login</button>
-      <button onclick="signup()">Sign Up</button>
+  <header>
+    <div class="container header-container">
+      <div class="logo">
+        <i class="fas fa-bitcoin"></i>
+        <h1>GEN Z Mining</h1>
+      </div>
+      <div class="user-menu">
+        <span id="username"></span>
+        <button class="btn btn-danger" onclick="logout()">Logout</button>
+      </div>
     </div>
-    <div id="chat-box" class="chat-box" style="display: none;">
-      <div id="messages"></div>
-      <textarea id="message" placeholder="Type a message"></textarea>
-      <button onclick="sendMessage()">Send</button>
-      <button onclick="logout()">Logout</button>
+  </header>
+  
+  <div class="container">
+    <div class="notification" id="notification"></div>
+    
+    <div class="dashboard">
+      <div class="card">
+        <div class="card-header">
+          <h2><i class="fas fa-wallet"></i> Account Balance</h2>
+        </div>
+        <div class="balance-amount" id="balance">0.00000 BTC</div>
+        <div class="mining-stats">
+          <div class="stat-item">
+            <div class="stat-value" id="hashrate">0 H/s</div>
+            <div class="stat-label">Hashrate</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="miners">0</div>
+            <div class="stat-label">Miners</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="payouts">0</div>
+            <div class="stat-label">Payouts</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-header">
+          <h2><i class="fas fa-hammer"></i> Mining Control</h2>
+          <i class="fas fa-power-off"></i>
+        </div>
+        <div class="mining-status">
+          <button class="btn btn-primary mining-btn" id="miningBtn" onclick="toggleMining()">Start Mining</button>
+          <div class="mining-progress">
+            <div class="progress-bar" id="miningProgress"></div>
+          </div>
+          <div class="mining-stats">
+            <div class="stat-item">
+              <div class="stat-value" id="minedToday">0.00000</div>
+              <div class="stat-label">Mined Today</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value" id="totalMined">0.00000</div>
+              <div class="stat-label">Total Mined</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-header">
+          <h2><i class="fas fa-money-bill-wave"></i> Withdraw Funds</h2>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Wallet Address</label>
+          <input type="text" class="form-control" id="walletInput" placeholder="Enter your BTC wallet address">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Amount (BTC)</label>
+          <input type="number" class="form-control" id="withdrawAmount" placeholder="0.00000">
+        </div>
+        <button class="btn btn-primary" onclick="requestWithdraw()">Request Withdrawal</button>
+      </div>
+      
+      <div class="card">
+        <div class="card-header">
+          <h2><i class="fas fa-users"></i> Referral Program</h2>
+        </div>
+        <p>Invite friends and earn 10% of their mining rewards!</p>
+        <div class="form-group">
+          <label class="form-label">Your Referral Link</label>
+          <div class="referral-link" id="inviteLink"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Referrals: <span id="referralCount">0</span></label>
+          <label class="form-label">Earned from referrals: <span id="referralEarnings">0.00000 BTC</span></label>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-header">
+          <h2><i class="fas fa-tasks"></i> Daily Tasks</h2>
+        </div>
+        <div id="taskList" class="task-list">
+          <div class="task-item">
+            <span>Complete your profile</span>
+            <div>
+              <span class="task-reward">+0.001 BTC</span>
+              <button class="btn btn-primary" style="padding: 5px 10px; margin-left: 10px;">Claim</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-header">
+          <h2><i class="fas fa-chart-line"></i> Mining Statistics</h2>
+        </div>
+        <div class="form-group">
+          <label class="form-label">24h Earnings: <span id="dailyEarnings">0.00000 BTC</span></label>
+          <label class="form-label">Total Earnings: <span id="totalEarnings">0.00000 BTC</span></label>
+          <label class="form-label">Next Payout: <span id="nextPayout">00:00:00</span></label>
+        </div>
+      </div>
     </div>
   </div>
+  
+  <footer>
+    <p>GEN Z Mining &copy; 2023 | Cloud Bitcoin Mining Platform</p>
+  </footer>
 
-  <!-- Firebase SDKs -->
-  <script type="module">
-    // Import the functions you need from the SDKs
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics.js";
-    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-    import { getFirestore, collection, addDoc, query, orderBy, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
-
-    // Firebase configuration
-    const firebaseConfig = {
-      apiKey: "AIzaSyBU4JeSJe5SJYhFocDRo0aEpkz4Z9kj8yo",
-      authDomain: "welook-massenger.firebaseapp.com",
-      projectId: "welook-massenger",
-      storageBucket: "welook-massenger.firebasestorage.app",
-      messagingSenderId: "709487987004",
-      appId: "1:709487987004:web:3c5a623b99e616d844f639",
-      measurementId: "G-8B09NT7GTR"
+  <script>
+    // Firebase config
+    const firebaseConfig = { 
+      apiKey: "AIzaSyB0fkLpu2BMFYZwUD62VCHyzl0WL83PiZM",
+      authDomain: "bloodzonebattle.firebaseapp.com",
+      databaseURL: "https://bloodzonebattle-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "bloodzonebattle",
+      storageBucket: "bloodzonebattle.appspot.com",
+      messagingSenderId: "1076060542688",
+      appId: "1:1076060542688:web:be696d81eb0172eee22285",
+      measurementId: "G-4TEN1VC0VN" 
     };
+    
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
-    const auth = getAuth(app);  // Initialize Firebase Auth here
-    const db = getFirestore(app);
-
-    let user = null;
-
-    // Handle login
-    async function login() {
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      
-      try {
-        await signInWithEmailAndPassword(auth, email, password);
-        user = auth.currentUser;
-        displayChat();
-      } catch (error) {
-        alert("Error: " + error.message);
-      }
+    // Elements
+    const notification = document.getElementById('notification');
+    function showNotification(msg, type = 'success') {
+      notification.textContent = msg;
+      notification.style.display = 'block';
+      notification.style.backgroundColor = type === 'success' ? '#28a745' : '#dc3545';
+      setTimeout(() => notification.style.display = 'none', 5000);
     }
 
-    // Handle sign-up
-    async function signup() {
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
+    // User management
+    let username = localStorage.getItem('genz_user') || prompt('Enter your username:');
+    if (!username) {
+      username = 'user' + Math.floor(Math.random() * 10000);
+      showNotification(`Assigned username: ${username}`);
+    }
+    localStorage.setItem('genz_user', username);
+    document.getElementById('username').textContent = username;
 
-      try {
-        await createUserWithEmailAndPassword(auth, email, password);
-        user = auth.currentUser;
-        displayChat();
-      } catch (error) {
-        console.error("Signup Error:", error);  // Log the error
-        alert("Error: " + error.message);
-      }
+    function logout() { 
+      localStorage.removeItem('genz_user'); 
+      window.location.reload(); 
     }
 
-    // Display chat interface
-    function displayChat() {
-      document.getElementById('login-form').style.display = 'none';
-      document.getElementById('chat-box').style.display = 'block';
-      loadMessages();
-    }
+    // User data
+    const userRef = db.ref('users/' + username);
+    let balance = 0;
+    let mining = false;
+    let miningInterval;
+    let statsInterval;
 
-    // Load chat messages
-    async function loadMessages() {
-      const messagesRef = collection(db, 'messages');
-      const q = query(messagesRef, orderBy('timestamp'));
-      const snapshot = await getDocs(q);
-      const messagesDiv = document.getElementById('messages');
-      messagesDiv.innerHTML = '';
-
-      snapshot.forEach(doc => {
-        const message = doc.data();
-        const div = document.createElement('div');
-        div.textContent = message.text;
-        messagesDiv.appendChild(div);
-      });
-    }
-
-    // Send message
-    async function sendMessage() {
-      const message = document.getElementById('message').value;
-
-      if (message.trim() === '') return;
-
-      await addDoc(collection(db, 'messages'), {
-        text: message,
-        user: user.email,
-        timestamp: serverTimestamp()
-      });
-
-      document.getElementById('message').value = '';
-      loadMessages();
-    }
-
-    // Logout
-    async function logout() {
-      await signOut(auth);
-      user = null;
-      document.getElementById('login-form').style.display = 'block';
-      document.getElementById('chat-box').style.display = 'none';
-    }
-
-    // Listen for auth state changes
-    auth.onAuthStateChanged(currentUser => {
-      if (currentUser) {
-        user = currentUser;
-        displayChat();
+    userRef.once('value').then(snap => {
+      if (!snap.exists()) {
+        const ref = new URLSearchParams(location.search).get('ref') || 'none';
+        userRef.set({ 
+          balance: 0,
+          banned: false,
+          referredBy: ref,
+          wallet_address: '',
+          total_mined: 0,
+          referrals: 0,
+          referral_earnings: 0
+        });
+      } else if (snap.val().banned) {
+        document.body.innerHTML = '<h2 style="text-align:center;color:red;margin-top:50px;">Your account has been suspended</h2>';
+        return;
       } else {
-        document.getElementById('login-form').style.display = 'block';
-        document.getElementById('chat-box').style.display = 'none';
+        const userData = snap.val();
+        balance = parseFloat(userData.balance || 0);
+        updateBalance();
+        document.getElementById('walletInput').value = userData.wallet_address || '';
+        document.getElementById('referralCount').textContent = userData.referrals || 0;
+        document.getElementById('referralEarnings').textContent = (userData.referral_earnings || 0).toFixed(5) + ' BTC';
+        document.getElementById('totalMined').textContent = (userData.total_mined || 0).toFixed(5) + ' BTC';
       }
     });
+
+    // Invite link
+    document.getElementById('inviteLink').textContent = window.location.origin + window.location.pathname + '?ref=' + username;
+
+    // Global notification
+    db.ref('global_notification').on('value', snap => {
+      if (snap.val()) {
+        showNotification(snap.val());
+      }
+    });
+
+    // Mining functions
+    function toggleMining() {
+      const btn = document.getElementById('miningBtn');
+      const progressBar = document.getElementById('miningProgress');
+      
+      if (!mining) {
+        mining = true;
+        btn.textContent = 'Stop Mining';
+        btn.classList.add('btn-danger');
+        btn.classList.remove('btn-primary');
+        
+        // Start mining animation
+        progressBar.style.width = '0';
+        setTimeout(() => progressBar.style.width = '100%', 50);
+        
+        // Start mining
+        miningInterval = setInterval(() => {
+          const minedAmount = 0.00001 + Math.random() * 0.00002;
+          balance += minedAmount;
+          userRef.update({
+            balance: balance.toFixed(5),
+            total_mined: firebase.database.ServerValue.increment(minedAmount)
+          });
+          updateBalance();
+          updateStats();
+        }, 10000);
+        
+        // Update stats periodically
+        statsInterval = setInterval(updateStats, 1000);
+        
+      } else {
+        mining = false;
+        clearInterval(miningInterval);
+        clearInterval(statsInterval);
+        btn.textContent = 'Start Mining';
+        btn.classList.remove('btn-danger');
+        btn.classList.add('btn-primary');
+        progressBar.style.width = '0';
+      }
+    }
+
+    function updateBalance() {
+      document.getElementById('balance').textContent = balance.toFixed(5) + ' BTC';
+      document.getElementById('minedToday').textContent = (balance * 0.1).toFixed(5);
+    }
+
+    function updateStats() {
+      const hashrate = mining ? (50 + Math.random() * 50).toFixed(2) : '0';
+      document.getElementById('hashrate').textContent = hashrate + ' H/s';
+    }
+
+    // Withdraw function
+    function requestWithdraw() {
+      const amount = parseFloat(document.getElementById('withdrawAmount').value);
+      const wallet = document.getElementById('walletInput').value.trim();
+      
+      if (!wallet) {
+        showNotification('Please enter your wallet address', 'error');
+        return;
+      }
+      
+      if (isNaN(amount) || amount <= 0 || amount > balance) {
+        showNotification('Invalid withdrawal amount', 'error');
+        return;
+      }
+      
+      // Save wallet if changed
+      userRef.update({ wallet_address: wallet });
+      
+      // Create withdrawal request
+      db.ref('withdraw_requests').push({
+        username: username,
+        wallet: wallet,
+        amount: amount.toFixed(5),
+        status: 'pending',
+        timestamp: firebase.database.ServerValue.TIMESTAMP
+      });
+      
+      // Deduct balance
+      balance -= amount;
+      userRef.update({ balance: balance.toFixed(5) });
+      updateBalance();
+      
+      showNotification(`Withdrawal request for ${amount.toFixed(5)} BTC submitted`);
+      document.getElementById('withdrawAmount').value = '';
+    }
+
+    // Tasks
+    db.ref('global_task').on('value', snap => {
+      const taskList = document.getElementById('taskList');
+      taskList.innerHTML = '';
+      
+      if (snap.exists()) {
+        const task = snap.val();
+        const taskItem = document.createElement('div');
+        taskItem.className = 'task-item';
+        taskItem.innerHTML = `
+          <span>${task}</span>
+          <div>
+            <span class="task-reward">+0.005 BTC</span>
+            <button class="btn btn-primary" style="padding: 5px 10px; margin-left: 10px;" onclick="completeTask()">Claim</button>
+          </div>
+        `;
+        taskList.appendChild(taskItem);
+      } else {
+        taskList.innerHTML = '<p>No tasks available at the moment</p>';
+      }
+    });
+
+    function completeTask() {
+      balance += 0.005;
+      userRef.update({ balance: balance.toFixed(5) });
+      updateBalance();
+      showNotification('Task completed! +0.005 BTC');
+    }
+
+    // Initialize
+    updateStats();
+    setInterval(() => {
+      const now = new Date();
+      const nextHour = new Date();
+      nextHour.setHours(now.getHours() + 1, 0, 0, 0);
+      const diff = nextHour - now;
+      
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+      
+      document.getElementById('nextPayout').textContent = 
+        `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }, 1000);
   </script>
 </body>
 </html>
